@@ -1,29 +1,30 @@
+// screens/HomeScreen.tsx
 import React from "react";
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-} from "react-native";
+import { StyleSheet, View, Image, Dimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useNavigation } from "@react-navigation/native";
 import { SearchBar } from "../components/SearchBar";
-import { Logo } from "../components/Logo";
 import { BottomNav } from "../components/BottomNav";
-import { Ionicons } from "@expo/vector-icons";
-//import { Image } from "react-native"
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../../App";
 
-export const HomeScreen = () => {
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+export const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+
+  const handleSearch = async (searchTerm: string): Promise<void> => {
+    if (!searchTerm.trim()) return;
+    navigation.navigate("SearchResult", { searchTerm });
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      {/* commenting out profile icon for now until we get it implemented */}
-      {/* <TouchableOpacity style={styles.profileButton}>
-        <Ionicons name="person-circle-outline" size={30} color="#ffffff80" />
-      </TouchableOpacity> */}
       <View style={styles.content}>
-        <SearchBar />
-        {/* <Logo /> */}
+        <SearchBar onSearch={handleSearch} />
         <Image
           source={require("../../assets/magic-button.png")}
           style={styles.icon}
@@ -33,8 +34,6 @@ export const HomeScreen = () => {
     </View>
   );
 };
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
@@ -47,15 +46,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
   },
-  profileButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    zIndex: 1,
-  },
   icon: {
-    width: screenWidth * 0.5, // Takes up about 50% of the screen width, or you can use 0.25 of screen height for balance
-    height: screenHeight * 0.25, // Takes up about 25% of the screen height
+    width: screenWidth * 0.5,
+    height: screenHeight * 0.25,
     resizeMode: "contain",
     marginTop: 20,
   },
