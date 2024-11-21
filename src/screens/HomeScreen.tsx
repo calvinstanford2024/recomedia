@@ -1,24 +1,32 @@
+// screens/HomeScreen.tsx
 import React from "react";
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  Text,
-} from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { SearchBar } from "../components/SearchBar";
-import { Logo } from "../components/Logo";
-import { BottomNav } from "../components/BottomNav";
-import { Ionicons } from "@expo/vector-icons";
-//import { Image } from "react-native"
 
-export const HomeScreen = () => {
+import { StyleSheet, View, Image, Dimensions } from "react-native";
+
+import { StatusBar } from "expo-status-bar";
+import { useNavigation } from "@react-navigation/native";
+import { SearchBar } from "../components/SearchBar";
+import { BottomNav } from "../components/BottomNav";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../../App";
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+export const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+
+  const handleSearch = async (searchTerm: string): Promise<void> => {
+    if (!searchTerm.trim()) return;
+    navigation.navigate("SearchResult", { searchTerm });
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.content}>
+        <SearchBar onSearch={handleSearch} />
         <Image
           source={require("../../assets/recomedia-slogan.png")}
           style={styles.icon}
@@ -29,8 +37,6 @@ export const HomeScreen = () => {
     </View>
   );
 };
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
@@ -43,12 +49,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     paddingHorizontal: 20,
-  },
-  profileButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    zIndex: 1,
   },
   icon: {
     width: screenWidth * 0.95,

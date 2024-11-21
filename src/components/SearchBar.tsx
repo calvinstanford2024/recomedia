@@ -1,8 +1,19 @@
-import React from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+// SearchBar.tsx
+import React, { useState } from "react";
+import { StyleSheet, TextInput, View, TouchableOpacity } from "react-native";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 
-export const SearchBar = () => {
+interface SearchBarProps {
+  onSearch: (searchTerm: string) => void;
+}
+
+export const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const handleSubmit = (): void => {
+    onSearch(searchTerm);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
@@ -11,7 +22,19 @@ export const SearchBar = () => {
           style={styles.input}
           placeholder="Search for a location"
           placeholderTextColor="#ffffff80"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+          onSubmitEditing={handleSubmit}
+          returnKeyType="search"
         />
+        {searchTerm.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearchTerm("")}
+            style={styles.clearButton}
+          >
+            <EvilIcons name="close" size={24} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -39,5 +62,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 12,
     paddingHorizontal: 20,
+  },
+  clearButton: {
+    padding: 10,
   },
 });
