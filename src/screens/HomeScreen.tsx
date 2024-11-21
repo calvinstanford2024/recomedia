@@ -1,6 +1,8 @@
 // screens/HomeScreen.tsx
 import React from "react";
+
 import { StyleSheet, View, Image, Dimensions } from "react-native";
+
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { SearchBar } from "../components/SearchBar";
@@ -26,9 +28,10 @@ export const HomeScreen: React.FC = () => {
       <View style={styles.content}>
         <SearchBar onSearch={handleSearch} />
         <Image
-          source={require("../../assets/magic-button.png")}
+          source={require("../../assets/recomedia-slogan.png")}
           style={styles.icon}
         />
+        <SearchBar />
       </View>
       <BottomNav />
     </View>
@@ -42,14 +45,22 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
   },
   icon: {
-    width: screenWidth * 0.5,
-    height: screenHeight * 0.25,
+    width: screenWidth * 0.95,
+    height: screenHeight * 0.5,
     resizeMode: "contain",
-    marginTop: 20,
+  },
+  subHeaderContainer: {
+    marginBottom: 20,
+  },
+  subHeader: {
+    fontSize: 18,
+    color: "#ffffff",
+    textAlign: "center",
   },
 });
