@@ -11,6 +11,7 @@ export interface MainRecommendation extends BaseRecommendation {
 }
 
 export interface SearchResponse {
+  bannerUrl: string;
   Recommendations: MainRecommendation[];
   AdditionalRecommendations: BaseRecommendation[];
 }

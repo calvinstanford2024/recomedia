@@ -1,4 +1,3 @@
-// src/screens/SearchResultPage.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
@@ -11,6 +10,7 @@ import {
   Dimensions,
   SafeAreaView,
   Animated,
+  Platform,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -86,7 +86,7 @@ export const SearchResultPage: React.FC = () => {
   const fetchResults = async () => {
     try {
       const response = await fetch(
-        "https://hook.us2.make.com/xf6zkjnkdx8kquwmercakduypi7a8gln",
+        "https://hook.us2.make.com/nl0xba966wmxrd1cfd972yzn896jifnp",
         {
           method: "POST",
           headers: {
@@ -101,11 +101,13 @@ export const SearchResultPage: React.FC = () => {
       }
 
       const rawData: {
+        bannerUrl: string;
         Recommendations: string[];
         AdditionalRecommendations: string[];
       } = await response.json();
 
       const parsedData: SearchResponse = {
+        bannerUrl: rawData.bannerUrl,
         Recommendations: JSON.parse(rawData.Recommendations[0]),
         AdditionalRecommendations: JSON.parse(
           rawData.AdditionalRecommendations[0]
@@ -191,90 +193,97 @@ export const SearchResultPage: React.FC = () => {
     );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar style="light" />
       <Image
-        source={require("../../assets/magic-button.png")}
+        source={{ uri: results?.bannerUrl }}
         style={styles.headerImage}
+        defaultSource={require("../../assets/magic-button.png")}
+        onError={() => console.log("Error loading banner image")}
       />
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.title}>Results for {route.params.searchTerm}</Text>
-
-        <FilterTabs
-          tabs={["All", "Movies", "Series"]}
-          activeTab={activeTab}
-          onTabPress={setActiveTab}
-        />
-
-        <View style={styles.mainRecommendationsContainer}>
-          {filteredRecommendations?.map((item, index) => (
-            <View key={index} style={styles.mainCard}>
-              <View style={styles.mainPosterContainer}>
-                {renderPosterImage(item.imageUrl)}
-              </View>
-              <View style={styles.mainCardContent}>
-                <Text style={styles.mainCardTitle}>{item.Title}</Text>
-                <Text style={styles.mainCardSubtitle}>
-                  {item.Creator} • {item.Year}
-                </Text>
-                <Text style={styles.mainCardDescription} numberOfLines={3}>
-                  {item.Reason}
-                </Text>
-                <View style={styles.typeContainer}>
-                  <Text style={styles.typeText}>{item.Type}</Text>
-                </View>
-              </View>
-            </View>
-          ))}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
 
-        {filteredAdditionalRecommendations &&
-          filteredAdditionalRecommendations.length > 0 && (
-            <>
-              <Text style={styles.sectionTitle}>More to Explore</Text>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.title}>
+            Results for {route.params.searchTerm}
+          </Text>
+          {/* 
+          <FilterTabs
+            tabs={["All", "Movies", "Series"]}
+            activeTab={activeTab}
+            onTabPress={setActiveTab}
+          /> */}
 
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.moreToExploreContainer}
-              >
-                {filteredAdditionalRecommendations.map((item, index) => (
-                  <TouchableOpacity
-                    key={`additional-${index}`}
-                    style={styles.posterContainer}
-                    activeOpacity={0.7}
-                  >
-                    {renderPosterImage(item.imageUrl)}
-                    <View style={styles.posterOverlay}>
-                      <Text style={styles.posterTitle} numberOfLines={2}>
-                        {item.Title}
-                      </Text>
-                      <View style={styles.typeContainer}>
-                        <Text style={styles.typeText}>{item.Type}</Text>
+          <View style={styles.mainRecommendationsContainer}>
+            {filteredRecommendations?.map((item, index) => (
+              <View key={index} style={styles.mainCard}>
+                <View style={styles.mainPosterContainer}>
+                  {renderPosterImage(item.imageUrl)}
+                </View>
+                <View style={styles.mainCardContent}>
+                  <Text style={styles.mainCardTitle}>{item.Title}</Text>
+                  <Text style={styles.mainCardSubtitle}>
+                    {item.Creator} • {item.Year}
+                  </Text>
+                  <Text style={styles.mainCardDescription} numberOfLines={3}>
+                    {item.Reason}
+                  </Text>
+                  <View style={styles.typeContainer}>
+                    <Text style={styles.typeText}>{item.Type}</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {filteredAdditionalRecommendations &&
+            filteredAdditionalRecommendations.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>More to Explore</Text>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.moreToExploreContainer}
+                >
+                  {filteredAdditionalRecommendations.map((item, index) => (
+                    <TouchableOpacity
+                      key={`additional-${index}`}
+                      style={styles.posterContainer}
+                      activeOpacity={0.7}
+                    >
+                      {renderPosterImage(item.imageUrl)}
+                      <View style={styles.posterOverlay}>
+                        <Text style={styles.posterTitle} numberOfLines={2}>
+                          {item.Title}
+                        </Text>
+                        <View style={styles.typeContainer}>
+                          <Text style={styles.typeText}>{item.Type}</Text>
+                        </View>
                       </View>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
 
-        <View style={styles.bottomSpacer} />
-      </ScrollView>
-    </SafeAreaView>
+          <View style={styles.bottomSpacer} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 
@@ -282,6 +291,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1E1B2E",
+  },
+  safeArea: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -315,13 +327,13 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20,
     paddingVertical: 10,
-    position: "absolute",
     zIndex: 1,
   },
   headerImage: {
     width: "100%",
-    height: 200,
+    height: 250,
     position: "absolute",
+    backgroundColor: "#2A2640",
   },
   backButton: {
     width: 40,
@@ -330,6 +342,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
+    ...Platform.select({
+      ios: {
+        marginTop: 4,
+      },
+      android: {
+        marginTop: 8,
+      },
+    }),
   },
   content: {
     flex: 1,
