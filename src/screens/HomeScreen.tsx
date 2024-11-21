@@ -26,12 +26,11 @@ export const HomeScreen: React.FC = () => {
     <View style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.content}>
-        <SearchBar onSearch={handleSearch} />
         <Image
           source={require("../../assets/recomedia-slogan.png")}
           style={styles.icon}
         />
-        <SearchBar />
+        <SearchBar onSearch={handleSearch} />
       </View>
       <BottomNav />
     </View>
