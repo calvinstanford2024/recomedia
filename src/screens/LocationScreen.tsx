@@ -1,3 +1,5 @@
+//Location or event scree that is populated with data from supabase after user selects location
+
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
@@ -30,13 +32,74 @@ export const LocationScreen = ({ route }: { route: any }) => {
     }>
   >([]);
   const [loading, setLoading] = useState(true);
-  const { location } = route.params;
+  //const { location } = route.params;
+  // Will be used once supabase is set up
+  // useEffect(() => {
+  //   const getMediaData = async () => {
+  //     try {
+  //       //const data = await fetchMediaDataFromSupabase(location);
+  //       //setMediaItems(data);
+  //     } catch (error) {
+  //       console.error("Error fetching media data:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   getMediaData();
+  // }, [location]);
 
   useEffect(() => {
     const getMediaData = async () => {
       try {
-        //const data = await fetchMediaDataFromSupabase(location);
-        //setMediaItems(data);
+        // Dummy data for testing purposes
+        const dummyData = [
+          {
+            title: "La La Land",
+            creator: "Damien Chazelle",
+            year: "2016",
+            rating: 90,
+            image: "https://example.com/la-la-land.jpg",
+            description:
+              "While navigating their careers in Los Angeles, a pianist and an actress fall in love while attempting to reconcile their aspirations for the future.",
+            platforms: ["netflix", "prime", "hulu", "apple"],
+          },
+          {
+            title: "Once Upon a Time in Hollywood",
+            creator: "Quentin Tarantino",
+            year: "2019",
+            rating: 85,
+            image: "https://example.com/once-upon.jpg",
+            description:
+              "A faded television actor and his stunt double strive to achieve fame in the final years of Hollywood's Golden Age.",
+            platforms: ["prime", "hulu", "apple"],
+          },
+          {
+            title: "Pulp Fiction",
+            creator: "Quentin Tarantino",
+            year: "1994",
+            rating: 70,
+            image: "https://example.com/pulp-fiction.jpg",
+            platforms: ["netflix", "hulu", "apple"],
+          },
+          {
+            title: "Nightcrawler",
+            creator: "Dan Gilroy",
+            year: "2014",
+            rating: 65,
+            image: "https://example.com/nightcrawler.jpg",
+            platforms: ["netflix", "prime", "apple"],
+          },
+          {
+            title: "Battle: Los Angeles",
+            creator: "Jonathan Liebesman",
+            year: "2011",
+            rating: 60,
+            image: "https://example.com/battle-la.jpg",
+            platforms: ["netflix", "prime", "hulu"],
+          },
+        ];
+        setMediaItems(dummyData);
       } catch (error) {
         console.error("Error fetching media data:", error);
       } finally {
@@ -45,7 +108,7 @@ export const LocationScreen = ({ route }: { route: any }) => {
     };
 
     getMediaData();
-  }, [location]);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -62,7 +125,8 @@ export const LocationScreen = ({ route }: { route: any }) => {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <Text style={styles.title}>FLIGHT TO {location.toUpperCase()}</Text>
+        {/* <Text style={styles.title}>FLIGHT TO {location.toUpperCase()}</Text> */}
+        <Text style={styles.title}>FLIGHT TO</Text>
 
         <FilterTabs
           tabs={["All", "Movies", "TV", "Books", "Songs"]}

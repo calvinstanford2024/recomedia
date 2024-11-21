@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  Text,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SearchBar } from "../components/SearchBar";
@@ -17,17 +18,12 @@ export const HomeScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      {/* commenting out profile icon for now until we get it implemented */}
-      {/* <TouchableOpacity style={styles.profileButton}>
-        <Ionicons name="person-circle-outline" size={30} color="#ffffff80" />
-      </TouchableOpacity> */}
       <View style={styles.content}>
-        <SearchBar />
-        {/* <Logo /> */}
         <Image
-          source={require("../../assets/magic-button.png")}
+          source={require("../../assets/recomedia-slogan.png")}
           style={styles.icon}
         />
+        <SearchBar />
       </View>
       <BottomNav />
     </View>
@@ -43,8 +39,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
   },
   profileButton: {
@@ -54,9 +51,16 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   icon: {
-    width: screenWidth * 0.5, // Takes up about 50% of the screen width, or you can use 0.25 of screen height for balance
-    height: screenHeight * 0.25, // Takes up about 25% of the screen height
+    width: screenWidth * 0.95,
+    height: screenHeight * 0.5,
     resizeMode: "contain",
-    marginTop: 20,
+  },
+  subHeaderContainer: {
+    marginBottom: 20,
+  },
+  subHeader: {
+    fontSize: 18,
+    color: "#ffffff",
+    textAlign: "center",
   },
 });

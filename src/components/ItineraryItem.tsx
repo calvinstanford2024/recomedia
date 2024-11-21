@@ -1,19 +1,20 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import React from "react";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 interface ItineraryItemProps {
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   title: string;
 }
 
 export const ItineraryItem = ({ icon, title }: ItineraryItemProps) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const handlePress = () => {
     if (title === "Flight to Los Angeles") {
-      navigation.navigate('FlightDetails');
+      navigation.navigate("FlightDetails");
+      //navigation.navigate("LocationScreen");
     }
   };
 
@@ -21,7 +22,11 @@ export const ItineraryItem = ({ icon, title }: ItineraryItemProps) => {
     <TouchableOpacity style={styles.container} onPress={handlePress}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Ionicons name={icon} size={24} color="#fff" />
+          <Ionicons
+            name={icon as keyof typeof Ionicons.glyphMap}
+            size={24}
+            color="#fff"
+          />
         </View>
         <Text style={styles.title}>{title}</Text>
       </View>
@@ -32,23 +37,23 @@ export const ItineraryItem = ({ icon, title }: ItineraryItemProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#8A2BE280',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#8A2BE280",
     borderRadius: 15,
     padding: 15,
     marginBottom: 10,
   },
   content: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   iconContainer: {
     marginRight: 15,
   },
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     flex: 1,
   },
