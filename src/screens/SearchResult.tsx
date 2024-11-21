@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -6,10 +6,8 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
   Dimensions,
   SafeAreaView,
-  Animated,
   Platform,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -28,100 +26,11 @@ type NavigationProp = NativeStackNavigationProp<
   "SearchResult"
 >;
 
-const loadingMessages = [
-  "Scanning through movies and shows...",
-  "Finding the perfect matches...",
-  "Analyzing your preferences...",
-  "Curating personalized recommendations...",
-  "Almost there...",
-];
-
 export const SearchResultPage: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp<RootStackParamList, "SearchResult">>();
   const [activeTab, setActiveTab] = useState<string>("All");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [results, setResults] = useState<SearchResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const spinValue = new Animated.Value(0);
-
-  // Rotate animation for loading icon
-  const startSpinAnimation = useCallback(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(spinValue, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(spinValue, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [spinValue]);
-
-  // Cycle through loading messages
-  useEffect(() => {
-    if (isLoading) {
-      const messageInterval = setInterval(() => {
-        setLoadingMessageIndex((prev) =>
-          prev === loadingMessages.length - 1 ? 0 : prev + 1
-        );
-      }, 3000);
-
-      startSpinAnimation();
-
-      return () => clearInterval(messageInterval);
-    }
-  }, [isLoading, startSpinAnimation]);
-
-  useEffect(() => {
-    fetchResults();
-  }, []);
-
-  const fetchResults = async () => {
-    try {
-      const response = await fetch(
-        "https://hook.us2.make.com/nl0xba966wmxrd1cfd972yzn896jifnp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ term: route.params.searchTerm }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const rawData: {
-        bannerUrl: string;
-        Recommendations: string[];
-        AdditionalRecommendations: string[];
-      } = await response.json();
-
-      const parsedData: SearchResponse = {
-        bannerUrl: rawData.bannerUrl,
-        Recommendations: JSON.parse(rawData.Recommendations[0]),
-        AdditionalRecommendations: JSON.parse(
-          rawData.AdditionalRecommendations[0]
-        ),
-      };
-
-      setResults(parsedData);
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
-      console.error("Search error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const results = route.params.searchResults;
 
   const renderPosterImage = (imageUrl: string) => {
     if (!imageUrl || imageUrl === "N/A") {
@@ -134,51 +43,6 @@ export const SearchResultPage: React.FC = () => {
     }
     return <Image source={{ uri: imageUrl }} style={styles.posterImage} />;
   };
-
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <StatusBar style="light" />
-        <View style={styles.loadingContent}>
-          <Animated.View
-            style={[styles.loadingIcon, { transform: [{ rotate: spin }] }]}
-          >
-            <Ionicons name="film-outline" size={50} color="#ffffff" />
-          </Animated.View>
-          <Text style={styles.loadingText}>
-            {loadingMessages[loadingMessageIndex]}
-          </Text>
-          <Text style={styles.loadingSubtext}>
-            Discovering content for "{route.params.searchTerm}"
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <StatusBar style="light" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity
-          style={styles.retryButton}
-          onPress={() => {
-            setIsLoading(true);
-            setError(null);
-            fetchResults();
-          }}
-        >
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
 
   const filteredRecommendations = results?.Recommendations.filter(
     (item) =>
@@ -220,12 +84,12 @@ export const SearchResultPage: React.FC = () => {
           <Text style={styles.title}>
             Results for {route.params.searchTerm}
           </Text>
-          {/* 
+
           <FilterTabs
             tabs={["All", "Movies", "Series"]}
             activeTab={activeTab}
             onTabPress={setActiveTab}
-          /> */}
+          />
 
           <View style={styles.mainRecommendationsContainer}>
             {filteredRecommendations?.map((item, index) => (
@@ -295,31 +159,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: "#1E1B2E",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingContent: {
-    alignItems: "center",
-    padding: 20,
-  },
-  loadingIcon: {
-    marginBottom: 20,
-  },
-  loadingText: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  loadingSubtext: {
-    color: "#ffffff80",
-    fontSize: 14,
-    textAlign: "center",
-  },
   contentContainer: {
     paddingBottom: 30,
   },
@@ -331,7 +170,7 @@ const styles = StyleSheet.create({
   },
   headerImage: {
     width: "100%",
-    height: 250,
+    height: "35%",
     position: "absolute",
     backgroundColor: "#2A2640",
   },
@@ -406,21 +245,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginTop: 30,
     marginBottom: 15,
-  },
-  errorText: {
-    color: "#ff6b6b",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: 20,
-    padding: 12,
-    backgroundColor: "#ffffff15",
-    borderRadius: 8,
-  },
-  retryText: {
-    color: "#fff",
-    fontSize: 16,
   },
   moreToExploreContainer: {
     paddingRight: 20,

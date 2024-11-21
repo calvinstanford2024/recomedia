@@ -10,11 +10,25 @@ export interface MainRecommendation extends BaseRecommendation {
   Creator: string;
 }
 
-export interface SearchResponse {
+export type SearchResponse = {
   bannerUrl: string;
-  Recommendations: MainRecommendation[];
-  AdditionalRecommendations: BaseRecommendation[];
-}
+  Recommendations: Array<{
+    Title: string;
+    Year: string;
+    Type: string;
+    Creator: string;
+    Reason: string;
+    imageUrl: string;
+  }>;
+  AdditionalRecommendations: Array<{
+    Title: string;
+    Year: string;
+    Type: string;
+    Creator: string;
+    Reason: string;
+    imageUrl: string;
+  }>;
+};
 
 export interface SearchRequest {
   term: string;
