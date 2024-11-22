@@ -20,7 +20,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         <EvilIcons name="search" size={24} color="white" style={styles.icon} />
         <TextInput
           style={styles.input}
-          placeholder="Search for a location"
+          placeholder="Search for a location or event"
           placeholderTextColor="#ffffff80"
           value={searchTerm}
           onChangeText={setSearchTerm}
@@ -50,7 +50,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff15",
     borderRadius: 25,
-    paddingHorizontal: 10,
     height: 50,
   },
   icon: {
@@ -61,7 +60,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     paddingVertical: 12,
-    paddingHorizontal: 20,
   },
   clearButton: {
     padding: 10,
