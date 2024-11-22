@@ -35,7 +35,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         />
         <TextInput
           style={styles.input}
-          placeholder="Search for movies or shows..."
+          placeholder="Search for a location or event"
           placeholderTextColor="#ffffff80"
           value={searchTerm}
           onChangeText={setSearchTerm}
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff15",
-    borderRadius: 12,
-    paddingHorizontal: 15,
+    borderRadius: 25,
+
     height: 50,
   },
   searchIcon: {
@@ -85,7 +85,9 @@ const styles = StyleSheet.create({
     flex: 1,
     color: "#fff",
     fontSize: 16,
+    paddingVertical: 12,
     height: "100%",
+
   },
   clearButton: {
     marginLeft: 10,
