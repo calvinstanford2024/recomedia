@@ -102,9 +102,6 @@ export const SearchResultPage: React.FC = () => {
                   <Text style={styles.mainCardSubtitle}>
                     {item.Creator} • {item.Year}
                   </Text>
-                  <Text style={styles.mainCardDescription} numberOfLines={3}>
-                    {item.Reason}
-                  </Text>
                   <View style={styles.typeContainer}>
                     <Text style={styles.typeText}>{item.Type}</Text>
                   </View>
@@ -224,7 +221,7 @@ const styles = StyleSheet.create({
   },
   mainCardTitle: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 4,
   },
