@@ -1,13 +1,16 @@
-
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { SearchResultPage } from "./src/screens/SearchResult";
+import { SearchResponse } from "./types/api";
 
 export type RootStackParamList = {
   Home: undefined;
-  SearchResult: { searchTerm: string };
+  SearchResult: {
+    searchTerm: string;
+    searchResults: SearchResponse;
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

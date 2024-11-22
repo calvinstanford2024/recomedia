@@ -1,23 +1,38 @@
-// SearchBar.tsx
 import React, { useState } from "react";
-import { StyleSheet, TextInput, View, TouchableOpacity } from "react-native";
-import EvilIcons from "@expo/vector-icons/EvilIcons";
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-interface SearchBarProps {
-  onSearch: (searchTerm: string) => void;
-}
+type SearchBarProps = {
+  onSearch: (term: string) => Promise<void>;
+  isLoading?: boolean;
+};
 
-export const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
+export const SearchBar: React.FC<SearchBarProps> = ({
+  onSearch,
+  isLoading,
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSubmit = (): void => {
-    onSearch(searchTerm);
+  const handleSubmit = async () => {
+    if (!searchTerm.trim()) return;
+    await onSearch(searchTerm);
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <EvilIcons name="search" size={24} color="white" style={styles.icon} />
+      <View style={styles.searchContainer}>
+        <Ionicons
+          name="search-outline"
+          size={20}
+          color="#ffffff80"
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.input}
           placeholder="Search for a location or event"
@@ -26,14 +41,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
           onChangeText={setSearchTerm}
           onSubmitEditing={handleSubmit}
           returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         {searchTerm.length > 0 && (
           <TouchableOpacity
             onPress={() => setSearchTerm("")}
             style={styles.clearButton}
           >
-            <EvilIcons name="close" size={24} color="white" />
+            <Ionicons name="close-circle" size={20} color="#ffffff80" />
           </TouchableOpacity>
+        )}
+        {isLoading && (
+          <ActivityIndicator
+            style={styles.loadingIndicator}
+            color="#ffffff"
+            size="small"
+          />
         )}
       </View>
     </View>
@@ -42,26 +66,33 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "80%",
-    marginBottom: 20,
+    width: "100%",
+    paddingHorizontal: 20,
+    marginTop: 20,
   },
-  inputContainer: {
+  searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff15",
     borderRadius: 25,
+
     height: 50,
   },
-  icon: {
-    marginHorizontal: 10,
+  searchIcon: {
+    marginRight: 10,
   },
   input: {
     flex: 1,
     color: "#fff",
     fontSize: 16,
     paddingVertical: 12,
+    height: "100%",
+
   },
   clearButton: {
-    padding: 10,
+    marginLeft: 10,
+  },
+  loadingIndicator: {
+    marginLeft: 10,
   },
 });
