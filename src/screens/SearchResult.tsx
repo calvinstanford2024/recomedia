@@ -102,6 +102,9 @@ export const SearchResultPage: React.FC = () => {
                   <Text style={styles.mainCardSubtitle}>
                     {item.Creator} • {item.Year}
                   </Text>
+                  <Text style={styles.mainCardDescription} numberOfLines={3}>
+                    {item.Reason}
+                  </Text>
                   <View style={styles.typeContainer}>
                     <Text style={styles.typeText}>{item.Type}</Text>
                   </View>
@@ -212,8 +215,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   mainPosterContainer: {
-    width: 100,
-    height: 150,
+    width: 115,
+    height: 185,
   },
   mainCardContent: {
     flex: 1,

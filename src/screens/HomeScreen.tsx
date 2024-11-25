@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { SearchBar } from "../components/SearchBar";
 import { BottomNav } from "../components/BottomNav";
 import { Ionicons } from "@expo/vector-icons";
+import { supabase } from "../lib/supabase";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../App";
 import type { SearchResponse } from "../../types/api";
@@ -22,7 +23,6 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 const loadingMessages = [
-  "Scanning through movies and shows...",
   "Finding the perfect matches...",
   "Analyzing your preferences...",
   "Curating personalized recommendations...",
@@ -32,11 +32,10 @@ const loadingMessages = [
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [isLoading, setIsLoading] = useState(false);
-  const [currentSearchTerm, setCurrentSearchTerm] = useState(""); // Added this state
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const spinValue = new Animated.Value(0);
 
-  // Rotate animation for loading icon
   const startSpinAnimation = useCallback(() => {
     Animated.loop(
       Animated.sequence([
@@ -71,31 +70,50 @@ export const HomeScreen: React.FC = () => {
   const handleSearch = async (searchTerm: string): Promise<void> => {
     if (!searchTerm.trim()) return;
 
-    setCurrentSearchTerm(searchTerm); // Store the search term
+    setCurrentSearchTerm(searchTerm);
     setIsLoading(true);
 
     try {
+      const normalizedTerm = searchTerm.toLowerCase();
+
+      // Check Supabase
+      const { data: existingSearch, error } = await supabase
+        .from("searches")
+        .select("searchResult")
+        .eq("searchTerm", normalizedTerm)
+        .single();
+
+      if (!error && existingSearch) {
+        const result = JSON.parse(existingSearch.searchResult);
+        const parsedResult = {
+          ...result,
+          Recommendations: JSON.parse(result.Recommendations[0]),
+          AdditionalRecommendations: JSON.parse(
+            result.AdditionalRecommendations[0]
+          ),
+        };
+
+        navigation.navigate("SearchResult", {
+          searchTerm,
+          searchResults: parsedResult,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Make API call if not in DB
       const response = await fetch(
-        "https://hook.us2.make.com/nl0xba966wmxrd1cfd972yzn896jifnp",
+        "https://hook.us2.make.com/tskvqrcq0xldr2p2m9n72qattbvu8chg",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ term: searchTerm }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
+      if (!response.ok) throw new Error("Network response was not ok");
 
-      const rawData: {
-        bannerUrl: string;
-        Recommendations: string[];
-        AdditionalRecommendations: string[];
-      } = await response.json();
-
+      const rawData = await response.json();
       const parsedData: SearchResponse = {
         bannerUrl: rawData.bannerUrl,
         Recommendations: JSON.parse(rawData.Recommendations[0]),
@@ -104,13 +122,26 @@ export const HomeScreen: React.FC = () => {
         ),
       };
 
+      // Store in Supabase
+      const { error: insertError } = await supabase.from("searches").insert({
+        searchTerm: normalizedTerm,
+        searchResult: JSON.stringify({
+          bannerUrl: parsedData.bannerUrl,
+          Recommendations: [JSON.stringify(parsedData.Recommendations)],
+          AdditionalRecommendations: [
+            JSON.stringify(parsedData.AdditionalRecommendations),
+          ],
+        }),
+      });
+
+      if (insertError) throw insertError;
+
       navigation.navigate("SearchResult", {
         searchTerm,
         searchResults: parsedData,
       });
     } catch (err) {
       console.error("Search error:", err);
-      // You might want to show an error toast or message here
     } finally {
       setIsLoading(false);
     }
