@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Text,
   Animated,
+  TouchableOpacity,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
@@ -183,6 +184,14 @@ export const HomeScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.profileButton}
+          onPress={() => navigation.navigate("ProfileScreen")}
+        >
+          <Ionicons name="person-circle-outline" size={30} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.content}>
         <Image
           source={require("../../assets/recomedia-slogan.png")}
@@ -236,5 +245,19 @@ const styles = StyleSheet.create({
     color: "#ffffff80",
     fontSize: 14,
     textAlign: "center",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
