@@ -6,12 +6,14 @@ import { ExploreScreen } from "./src/screens/ExploreScreen";
 import { SearchResultPage } from "./src/screens/SearchResult";
 import { RecommendationDetail } from "./src/screens/RecommendationDetail";
 import { CalendarScreen } from "./src/screens/CalendarScreen";
+import { ProfileScreen } from "./src/screens/ProfileScreen";
 import type { SearchResponse } from "./src/types/api";
 
 export type RootStackParamList = {
   HomeScreen: undefined;
   ExploreScreen: undefined;
   CalendarScreen: undefined;
+  ProfileScreen: undefined;
   SearchResult: {
     searchTerm: string;
     searchResults: SearchResponse;
@@ -43,6 +45,7 @@ export default function App() {
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="ExploreScreen" component={ExploreScreen} />
         <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
         <Stack.Screen name="SearchResult" component={SearchResultPage} />
         <Stack.Screen
           name="RecommendationDetail"
