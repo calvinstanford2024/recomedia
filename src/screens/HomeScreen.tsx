@@ -16,9 +16,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../App";
-import type { SearchResponse } from "../../types/api";
+import type { SearchResponse } from "../types/api";
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+type NavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "HomeScreen"
+>;
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -116,10 +119,14 @@ export const HomeScreen: React.FC = () => {
       const rawData = await response.json();
       const parsedData: SearchResponse = {
         bannerUrl: rawData.bannerUrl,
-        Recommendations: JSON.parse(rawData.Recommendations[0]),
-        AdditionalRecommendations: JSON.parse(
-          rawData.AdditionalRecommendations[0]
-        ),
+        Recommendations: Array.isArray(rawData.Recommendations)
+          ? JSON.parse(rawData.Recommendations[0])
+          : rawData.Recommendations,
+        AdditionalRecommendations: Array.isArray(
+          rawData.AdditionalRecommendations
+        )
+          ? JSON.parse(rawData.AdditionalRecommendations[0])
+          : rawData.AdditionalRecommendations,
       };
 
       // Store in Supabase
