@@ -4,14 +4,28 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { ExploreScreen } from "./src/screens/ExploreScreen";
 import { SearchResultPage } from "./src/screens/SearchResult";
-import { SearchResponse } from "./types/api";
+import { RecommendationDetail } from "./src/screens/RecommendationDetail";
 import { CalendarScreen } from "./src/screens/CalendarScreen";
+import type { SearchResponse } from "./src/types/api";
 
 export type RootStackParamList = {
-  Home: undefined;
+  HomeScreen: undefined;
+  ExploreScreen: undefined;
+  CalendarScreen: undefined;
   SearchResult: {
     searchTerm: string;
     searchResults: SearchResponse;
+  };
+  RecommendationDetail: {
+    title: string;
+    year: string;
+    creator: string;
+    description: string;
+    reason: string;
+    places_featured: string[];
+    where_to_watch: string[];
+    imageUrl: string;
+    rating?: number;
   };
 };
 
@@ -30,6 +44,10 @@ export default function App() {
         <Stack.Screen name="ExploreScreen" component={ExploreScreen} />
         <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
         <Stack.Screen name="SearchResult" component={SearchResultPage} />
+        <Stack.Screen
+          name="RecommendationDetail"
+          component={RecommendationDetail}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
