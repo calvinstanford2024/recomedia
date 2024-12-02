@@ -11,18 +11,17 @@ import {
   Animated,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { BottomNav } from "../components/BottomNav";
 import * as Location from "expo-location";
 import { supabase } from "../lib/supabase";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../App";
+import type { ExploreStackParamList } from "../../App";
 import type { SearchResponse } from "../types/api";
 import { Ionicons } from "@expo/vector-icons";
 
 type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "ExploreScreen"
+  ExploreStackParamList,
+  "Explore"
 >;
 
 type NearbyLocation = {
@@ -385,7 +384,6 @@ export const ExploreScreen = () => {
           </>
         )}
       </ScrollView>
-      <BottomNav />
     </View>
   );
 };

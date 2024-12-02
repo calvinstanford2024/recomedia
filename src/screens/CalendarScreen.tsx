@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { BottomNav } from "../components/BottomNav";
 import { ItineraryItem } from "../components/ItineraryItem";
 
 export const CalendarScreen = () => {
@@ -44,7 +43,6 @@ export const CalendarScreen = () => {
           />
         </View>
       </ScrollView>
-      <BottomNav />
     </View>
   );
 };
