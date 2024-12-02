@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Dimensions,
   Image,
+  Share,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -54,6 +55,20 @@ export const RecommendationDetail: React.FC = () => {
     Peacock: "#000000",
   };
 
+  const handleShare = async () => {
+    try {
+      const message = `Check out ${title}${creator ? ` by ${creator}` : ""}${
+        year ? ` (${year})` : ""
+      }`;
+      await Share.share({
+        message,
+        title: title,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const renderHeaderImage = () => {
     if (!imageUrl) {
       return (
@@ -90,7 +105,7 @@ export const RecommendationDetail: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.rightButtons}>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
               <Ionicons name="share-outline" size={24} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity style={[styles.iconButton, { marginLeft: 10 }]}>

@@ -12,17 +12,13 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { SearchBar } from "../components/SearchBar";
-import { BottomNav } from "../components/BottomNav";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../App";
+import type { HomeStackParamList } from "../../App";
 import type { SearchResponse } from "../types/api";
 
-type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "HomeScreen"
->;
+type NavigationProp = NativeStackNavigationProp<HomeStackParamList, "Home">;
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -199,7 +195,6 @@ export const HomeScreen: React.FC = () => {
         />
         <SearchBar onSearch={handleSearch} />
       </View>
-      <BottomNav />
     </View>
   );
 };
