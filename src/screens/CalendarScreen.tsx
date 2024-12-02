@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { BottomNav } from "../components/BottomNav";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,8 +16,8 @@ import { makeRedirectUri } from "expo-auth-session";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_CLIENT_ID =
-  "193482427987-k03qepntcbsifv4mhna7k7b3ki66peq2.apps.googleusercontent.com";
+const GOOGLE_WEB_CLIENT_ID =
+  "193482427987-l6psi1ecnjvrodtv255clp5g85aj42ec.apps.googleusercontent.com";
 const GOOGLE_SCOPES = [
   "https://www.googleapis.com/auth/calendar.readonly",
   "https://www.googleapis.com/auth/calendar.events.readonly",
@@ -21,16 +27,13 @@ export const CalendarScreen = () => {
   const [isConnected, setIsConnected] = useState(false);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_CLIENT_ID,
+    clientId: GOOGLE_WEB_CLIENT_ID,
     scopes: GOOGLE_SCOPES,
     redirectUri: makeRedirectUri({
-      native: "com.calvinlaughlin.recomedia:/oauth2redirect",
+      scheme: "exp",
+      path: "redirect",
     }),
     responseType: "token",
-    usePKCE: true,
-    extraParams: {
-      access_type: "offline",
-    },
   });
 
   useEffect(() => {
@@ -42,17 +45,15 @@ export const CalendarScreen = () => {
   }, [response]);
 
   const handleGoogleResponse = async () => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-
+    if (response?.type === "success" && response.authentication) {
       try {
         // Store the token in Supabase
         const { error } = await supabase
           .from("users")
           .update({
-            google_calendar_token: authentication.accessToken,
+            google_calendar_token: response.authentication.accessToken,
             google_token_expiry: new Date(
-              authentication.expirationDate
+              Date.now() + (response.authentication.expiresIn ?? 3600) * 1000
             ).toISOString(),
           })
           .eq("username", "calvinlaughlin");
