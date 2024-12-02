@@ -1,16 +1,41 @@
 import "react-native-url-polyfill/auto";
-import { createClient } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient } from "@supabase/supabase-js";
+import Constants from "expo-constants";
 
-const supabaseUrl = "https://wvqpksnbyjjwtexwmloc.supabase.co";
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cXBrc25ieWpqd3RleHdtbG9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIwNzI2NDQsImV4cCI6MjA0NzY0ODY0NH0.TXkGgAUbXMm9otFVuiMRiwFuMQVkCgYH-s_CVMW5egQ";
+if (!Constants.expoConfig?.extra?.supabaseUrl) {
+  console.error("Missing EXPO_PUBLIC_SUPABASE_URL in environment variables");
+}
+if (!Constants.expoConfig?.extra?.supabaseAnonKey) {
+  console.error(
+    "Missing EXPO_PUBLIC_SUPABASE_ANON_KEY in environment variables"
+  );
+}
+if (!Constants.expoConfig?.extra?.supabaseServiceKey) {
+  console.error(
+    "Missing EXPO_PUBLIC_SUPABASE_SERVICE_KEY in environment variables"
+  );
+}
 
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl as string;
+const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey as string;
+const supabaseServiceKey = Constants.expoConfig?.extra
+  ?.supabaseServiceKey as string;
+
+// Regular client for normal operations
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: AsyncStorage,
-    detectSessionInUrl: false,
     autoRefreshToken: true,
     persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
+
+// Service role client for admin operations
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
   },
 });

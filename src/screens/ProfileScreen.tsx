@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 interface UserData {
   username: string;
@@ -21,16 +23,19 @@ interface UserData {
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { user } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!user) return;
+
       try {
         const { data, error } = await supabase
           .from("users")
           .select("username, firstName, lastName")
-          .eq("username", "calvinlaughlin")
+          .eq("id", user.id)
           .single();
 
         if (error) throw error;
@@ -43,7 +48,16 @@ export const ProfileScreen: React.FC = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [user]);
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      Alert.alert("Error signing out", error.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -75,11 +89,12 @@ export const ProfileScreen: React.FC = () => {
             <Ionicons name="person-circle" size={80} color="#ffffff" />
           </View>
           <Text style={styles.username}>
-            {userData?.username || "Username"}
+            {userData?.username || user?.email}
           </Text>
           <Text style={styles.name}>
             {userData ? `${userData.firstName} ${userData.lastName}` : ""}
           </Text>
+          <Text style={styles.email}>{user?.email}</Text>
         </View>
 
         <View style={styles.menuSection}>
@@ -99,6 +114,14 @@ export const ProfileScreen: React.FC = () => {
             <Ionicons name="help-circle-outline" size={24} color="#ffffff" />
             <Text style={styles.menuText}>Help & Support</Text>
             <Ionicons name="chevron-forward" size={24} color="#ffffff80" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, styles.signOutButton]}
+            onPress={handleSignOut}
+          >
+            <Ionicons name="log-out-outline" size={24} color="#FF4B55" />
+            <Text style={[styles.menuText, styles.signOutText]}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -147,6 +170,11 @@ const styles = StyleSheet.create({
     color: "#ffffff80",
     marginTop: 5,
   },
+  email: {
+    fontSize: 14,
+    color: "#ffffff60",
+    marginTop: 5,
+  },
   menuSection: {
     padding: 20,
   },
@@ -167,5 +195,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  signOutButton: {
+    marginTop: 20,
+    borderBottomWidth: 0,
+  },
+  signOutText: {
+    color: "#FF4B55",
   },
 });
