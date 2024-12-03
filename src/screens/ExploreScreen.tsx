@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -11,45 +11,22 @@ import {
   Animated,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import * as Location from "expo-location";
 import { supabase } from "../lib/supabase";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { ExploreStackParamList } from "../../App";
 import type { SearchResponse } from "../types/api";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocation } from "../context/LocationContext";
 
 type NavigationProp = NativeStackNavigationProp<
   ExploreStackParamList,
   "Explore"
 >;
 
-type NearbyLocation = {
-  imageUrl: string;
-  locationName: string;
-};
-
-type LocationResponse = {
-  nearby: NearbyLocation[];
-};
-
 type SeasonalEvent = {
   imageUrl: string;
   locationName: string;
-};
-
-type StoredLocation = {
-  latitude: number;
-  longitude: number;
-};
-
-// Keep these refs outside the component to persist across remounts
-const nearbyLocationsRef = {
-  current: [] as NearbyLocation[],
-};
-
-const lastLocationRef = {
-  current: null as StoredLocation | null,
 };
 
 const loadingMessages = [
@@ -61,9 +38,11 @@ const loadingMessages = [
 
 export const ExploreScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>(
-    nearbyLocationsRef.current
-  );
+  const {
+    nearbyLocations,
+    isLoading: isLoadingLocations,
+    refreshLocations,
+  } = useLocation();
   const [seasonalEvents, setSeasonalEvents] = useState<SeasonalEvent[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
@@ -101,77 +80,6 @@ export const ExploreScreen = () => {
     }
   }, [isSearching, startSpinAnimation]);
 
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
-  const fetchNearbyLocations = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") return;
-
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      if (lastLocationRef.current) {
-        const distance = calculateDistance(
-          lastLocationRef.current.latitude,
-          lastLocationRef.current.longitude,
-          location.coords.latitude,
-          location.coords.longitude
-        );
-
-        if (distance < 1 && nearbyLocationsRef.current.length > 0) {
-          setNearbyLocations(nearbyLocationsRef.current);
-          return;
-        }
-      }
-
-      lastLocationRef.current = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-
-      const response = await fetch(
-        "https://hook.us2.make.com/k83w33j0hl24vkwnch0ylgkh7rolze7o",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data: LocationResponse = await response.json();
-        nearbyLocationsRef.current = data.nearby;
-        setNearbyLocations(data.nearby);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   useEffect(() => {
     const fetchSeasonalEvents = async () => {
       try {
@@ -195,18 +103,7 @@ export const ExploreScreen = () => {
     fetchSeasonalEvents();
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (nearbyLocationsRef.current.length > 0) {
-        setNearbyLocations(nearbyLocationsRef.current);
-      }
-      fetchNearbyLocations();
-    }, [])
-  );
-
-  const handleLocationPress = async (
-    location: NearbyLocation | SeasonalEvent
-  ) => {
+  const handleLocationPress = async (location: { locationName: string }) => {
     if (isSearching) return;
     setIsSearching(true);
 
@@ -234,7 +131,7 @@ export const ExploreScreen = () => {
         };
 
         navigation.navigate("SearchResult", {
-          searchTerm, // Use original searchTerm for display
+          searchTerm,
           searchResults: parsedResult,
         });
         setIsSearching(false);
@@ -247,7 +144,7 @@ export const ExploreScreen = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ term: searchTerm }), // Use original searchTerm for API
+          body: JSON.stringify({ term: searchTerm }),
         }
       );
 
@@ -266,9 +163,9 @@ export const ExploreScreen = () => {
           : rawData.AdditionalRecommendations,
       };
 
-      // Store in Supabase with normalized term
+      // Store in Supabase
       const { error: insertError } = await supabase.from("searches").insert({
-        searchTerm: normalizedTerm, // Use normalized term for storage
+        searchTerm: normalizedTerm,
         searchResult: JSON.stringify({
           bannerUrl: parsedData.bannerUrl,
           Recommendations: [JSON.stringify(parsedData.Recommendations)],
@@ -281,7 +178,7 @@ export const ExploreScreen = () => {
       if (insertError) throw insertError;
 
       navigation.navigate("SearchResult", {
-        searchTerm, // Use original searchTerm for display
+        searchTerm,
         searchResults: parsedData,
       });
     } catch (error) {

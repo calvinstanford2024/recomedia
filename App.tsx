@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
+import { LocationProvider } from "./src/context/LocationContext";
 import { ActivityIndicator, View } from "react-native";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { ExploreScreen } from "./src/screens/ExploreScreen";
@@ -163,11 +164,7 @@ function NavigationContent() {
 
   return (
     <NavigationContainer linking={linking}>
-      {!user ? (
-        <LoginScreen />
-      ) : (
-        <TabNavigation />
-      )}
+      {!user ? <LoginScreen /> : <TabNavigation />}
     </NavigationContainer>
   );
 }
@@ -175,7 +172,9 @@ function NavigationContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContent />
+      <LocationProvider>
+        <NavigationContent />
+      </LocationProvider>
     </AuthProvider>
   );
 }
