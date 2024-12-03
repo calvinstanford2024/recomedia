@@ -13,8 +13,8 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { FilterTabs } from "../components/FilterTabs";
-import { MediaCard } from "../components/MediaCard";
+import { FilterTabs } from "../src/components/FilterTabs";
+import { MediaCard } from "../src/components/MediaCard";
 //import { fetchMediaDataFromSupabase } from '../services/mediaService';
 
 export const LocationScreen = ({ route }: { route: any }) => {

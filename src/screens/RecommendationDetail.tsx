@@ -14,12 +14,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from "@react-navigation/native";
-import type { RootStackParamList } from "../../App";
+import type { RootStackParamList } from "../types/navigation";
+import { LinearGradient } from "expo-linear-gradient";
 
-type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "RecommendationDetail"
->;
+export interface Recommendation {
+  title: string;
+  year: string;
+  creator: string;
+  description: string;
+  reason: string;
+  places_featured: string[];
+  where_to_watch: string[];
+  imageUrl: string;
+  rating: number;
+}
+
+interface LocationInfo {
+  imageUrl: string;
+  locationName: string;
+}
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type DetailRouteProp = RouteProp<RootStackParamList, "RecommendationDetail">;
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -29,14 +44,14 @@ export const RecommendationDetail: React.FC = () => {
   const route = useRoute<DetailRouteProp>();
 
   const {
-    title = "",
-    year = "",
-    creator = "",
-    description = "",
-    reason = "",
-    places_featured = [],
-    where_to_watch = [],
-    imageUrl = "",
+    title,
+    year,
+    creator,
+    description,
+    reason,
+    places_featured,
+    where_to_watch,
+    imageUrl,
     rating = 90,
   } = route.params;
 
@@ -72,9 +87,12 @@ export const RecommendationDetail: React.FC = () => {
   const renderHeaderImage = () => {
     if (!imageUrl) {
       return (
-        <View
-          style={[styles.headerPlaceholder, { backgroundColor: "#2A2640" }]}
-        />
+        <View style={styles.headerPlaceholder}>
+          <LinearGradient
+            colors={["rgba(30, 27, 46, 0)", "rgba(30, 27, 46, 1)"]}
+            style={styles.headerGradient}
+          />
+        </View>
       );
     }
 
@@ -85,48 +103,71 @@ export const RecommendationDetail: React.FC = () => {
           style={styles.headerImage}
           resizeMode="cover"
         />
-        <View style={styles.headerOverlay} />
+        <LinearGradient
+          colors={["rgba(30, 27, 46, 0)", "rgba(30, 27, 46, 1)"]}
+          style={styles.headerGradient}
+        />
       </View>
     );
   };
+
+  const parsedLocations = React.useMemo(() => {
+    if (where_to_watch && where_to_watch[0]) {
+      try {
+        return JSON.parse(where_to_watch[0]) as LocationInfo[];
+      } catch (e) {
+        console.error("Failed to parse locations:", e);
+        return [];
+      }
+    }
+    return [];
+  }, [where_to_watch]);
 
   return (
     <View style={styles.container}>
       {renderHeaderImage()}
 
       <SafeAreaView style={styles.safeArea}>
-        {/* Header buttons container */}
         <View style={styles.headerButtons}>
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="close" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
 
           <View style={styles.rightButtons}>
             <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
               <Ionicons name="share-outline" size={24} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconButton, { marginLeft: 10 }]}>
-              <Ionicons name="bookmark-outline" size={24} color="#fff" />
-            </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>{title}</Text>
-
-          <View style={styles.metaContainer}>
-            {year && <Text style={styles.metaText}>{year}</Text>}
-            {year && creator && <Text style={styles.metaText}> • </Text>}
-            {creator && <Text style={styles.metaText}>{creator}</Text>}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{title}</Text>
             {rating && (
-              <View style={styles.ratingContainer}>
-                <Ionicons name="star" size={16} color="#6C5DD3" />
+              <View style={styles.ratingBadge}>
+                {/* <Image
+                  // source={require("../assets/rating-icon.png")}
+                  source={require("../assets/fruitvale.jpg")}
+                  style={styles.ratingIcon}
+                /> */}
                 <Text style={styles.ratingText}>{rating}%</Text>
               </View>
             )}
+          </View>
+
+          <View style={styles.metaContainer}>
+            {year && <Text style={styles.metaText}>{year}</Text>}
+            {creator && (
+              <>
+                <Text style={styles.metaDot}> • </Text>
+                <Text style={styles.metaText}>{creator}</Text>
+              </>
+            )}
+            <Text style={styles.metaDot}> • </Text>
+            <Text style={styles.metaText}>Comedy/Drama</Text>
           </View>
 
           {description && <Text style={styles.description}>{description}</Text>}
@@ -146,16 +187,15 @@ export const RecommendationDetail: React.FC = () => {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.placesContainer}
               >
-                {places_featured.map((place, index) => (
+                {parsedLocations.map((location, index) => (
                   <View key={index} style={styles.placeCard}>
-                    <View style={styles.placeholderImage}>
-                      <Ionicons
-                        name="image-outline"
-                        size={24}
-                        color="#ffffff40"
-                      />
-                    </View>
-                    <Text style={styles.placeName}>{place}</Text>
+                    <Image
+                      source={{ uri: location.imageUrl }}
+                      style={styles.placeImage}
+                    />
+                    <Text style={styles.placeName}>
+                      {location.locationName}
+                    </Text>
                   </View>
                 ))}
               </ScrollView>
@@ -166,18 +206,17 @@ export const RecommendationDetail: React.FC = () => {
             <>
               <Text style={styles.sectionTitle}>Where to Watch</Text>
               <View style={styles.streamingContainer}>
-                {where_to_watch.map((platform, index) => {
-                  const color = streamingColors[platform] || "#666666";
-                  const initial = platform.charAt(0).toUpperCase();
-                  return (
-                    <View
-                      key={index}
-                      style={[styles.streamingIcon, { backgroundColor: color }]}
-                    >
-                      <Text style={styles.streamingText}>{initial}</Text>
-                    </View>
-                  );
-                })}
+                {where_to_watch.map((platform, index) => (
+                  <Image
+                    key={index}
+                    source={{
+                      uri: `https://logo.clearbit.com/${platform
+                        .toLowerCase()
+                        .replace(/\s+/g, "")}.com`,
+                    }}
+                    style={styles.streamingLogo}
+                  />
+                ))}
               </View>
             </>
           )}
@@ -199,24 +238,26 @@ const styles = StyleSheet.create({
   },
   headerPlaceholder: {
     width: "100%",
-    height: "35%",
+    height: "45%",
     position: "absolute",
   },
   headerImage: {
     width: "100%",
     height: "100%",
   },
-  headerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(42, 38, 64, 0.7)",
+  headerGradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "70%",
   },
-  // New styles for header buttons
   headerButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     zIndex: 1,
   },
   rightButtons: {
@@ -227,106 +268,114 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",
   },
   content: {
     flex: 1,
-    marginTop: "55%", // Adjusted to account for header buttons
+    marginTop: "35%",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     backgroundColor: "#1E1B2E",
-    padding: 20,
+    padding: 24,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 10,
+    flex: 1,
+    marginRight: 16,
+  },
+  ratingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(108, 93, 211, 0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  ratingIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 4,
+  },
+  ratingText: {
+    color: "#6C5DD3",
+    fontSize: 16,
+    fontWeight: "600",
   },
   metaContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
     flexWrap: "wrap",
   },
   metaText: {
-    fontSize: 16,
-    color: "#ffffff80",
+    fontSize: 15,
+    color: "rgba(255, 255, 255, 0.6)",
   },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#6C5DD320",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 10,
-  },
-  ratingText: {
-    color: "#6C5DD3",
-    marginLeft: 4,
-    fontWeight: "600",
+  metaDot: {
+    fontSize: 15,
+    color: "rgba(255, 255, 255, 0.6)",
   },
   description: {
-    fontSize: 16,
-    color: "#ffffff80",
-    lineHeight: 24,
-    marginBottom: 24,
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.7)",
+    lineHeight: 20,
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 16,
-    marginTop: 8,
   },
   reasonText: {
     fontSize: 16,
-    color: "#ffffff80",
+    color: "rgba(255, 255, 255, 0.8)",
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: 32,
   },
   placesContainer: {
-    paddingRight: 20,
+    paddingRight: 24,
   },
   placeCard: {
-    width: screenWidth * 0.4,
-    marginRight: 15,
-    borderRadius: 12,
+    width: 200,
+    marginRight: 16,
+    borderRadius: 16,
     overflow: "hidden",
+    backgroundColor: "#ffffff10",
   },
-  placeholderImage: {
+  placeImage: {
     width: "100%",
     height: 120,
-    borderRadius: 12,
-    backgroundColor: "#ffffff10",
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 16,
   },
   placeName: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
     marginTop: 8,
+    marginBottom: 8,
+    paddingHorizontal: 8,
   },
   streamingContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 16,
   },
-  streamingIcon: {
+  streamingLogo: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  streamingText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+    backgroundColor: "#fff",
   },
   bottomSpacer: {
     height: 40,

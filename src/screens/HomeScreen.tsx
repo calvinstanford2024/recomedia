@@ -74,16 +74,23 @@ export const HomeScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const normalizedTerm = searchTerm.toLowerCase();
+      const normalizedTerm = searchTerm.trim().toLowerCase();
 
-      // Check Supabase
-      const { data: existingSearch, error } = await supabase
+      const { data: existingSearch, error: searchError } = await supabase
         .from("searches")
         .select("searchResult")
         .eq("searchTerm", normalizedTerm)
-        .single();
+        .order("createdAt", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (!error && existingSearch) {
+      if (searchError) {
+        console.error("Error checking for existing search:", searchError);
+        throw searchError;
+      }
+
+      if (existingSearch) {
+        console.log("Found existing search for:", normalizedTerm);
         const result = JSON.parse(existingSearch.searchResult);
         const parsedResult = {
           ...result,
@@ -101,7 +108,7 @@ export const HomeScreen: React.FC = () => {
         return;
       }
 
-      // Make API call if not in DB
+      console.log("No existing search found for:", normalizedTerm);
       const response = await fetch(
         "https://hook.us2.make.com/tskvqrcq0xldr2p2m9n72qattbvu8chg",
         {
@@ -125,20 +132,6 @@ export const HomeScreen: React.FC = () => {
           ? JSON.parse(rawData.AdditionalRecommendations[0])
           : rawData.AdditionalRecommendations,
       };
-
-      // Store in Supabase
-      const { error: insertError } = await supabase.from("searches").insert({
-        searchTerm: normalizedTerm,
-        searchResult: JSON.stringify({
-          bannerUrl: parsedData.bannerUrl,
-          Recommendations: [JSON.stringify(parsedData.Recommendations)],
-          AdditionalRecommendations: [
-            JSON.stringify(parsedData.AdditionalRecommendations),
-          ],
-        }),
-      });
-
-      if (insertError) throw insertError;
 
       navigation.navigate("SearchResult", {
         searchTerm,
