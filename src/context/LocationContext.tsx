@@ -1,10 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as Location from "expo-location";
-
-type NearbyLocation = {
-  imageUrl: string;
-  locationName: string;
-};
+import { getNearbyLocations, NearbyLocation } from "../utils/nearbyLocations";
 
 type LocationContextType = {
   nearbyLocations: NearbyLocation[];
@@ -84,25 +80,13 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({
         longitude: location.coords.longitude,
       };
 
-      const response = await fetch(
-        "https://hook.us2.make.com/k83w33j0hl24vkwnch0ylgkh7rolze7o",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          }),
-        }
+      const nearby = await getNearbyLocations(
+        location.coords.latitude,
+        location.coords.longitude
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        cachedLocations = data.nearby;
-        setNearbyLocations(data.nearby);
-      }
+      cachedLocations = nearby;
+      setNearbyLocations(nearby);
     } catch (error) {
       setError(
         error instanceof Error
