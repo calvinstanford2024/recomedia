@@ -138,7 +138,15 @@ export const RecommendationDetail: React.FC = () => {
 
           <View style={styles.rightButtons}>
             <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
-              <Ionicons name="share-outline" size={24} color="#fff" />
+              <Ionicons
+                name="share-outline"
+                size={24}
+                color="#fff"
+                style={{ marginLeft: 2, marginBottom: 1 }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="bookmark-outline" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -263,12 +271,14 @@ const styles = StyleSheet.create({
   rightButtons: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 5,
+    //justifyContent: "space-between",
   },
   iconButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
     alignItems: "center",
   },
