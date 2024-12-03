@@ -18,19 +18,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { FilterTabs } from "../components/FilterTabs";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from "@react-navigation/native";
-import type { RootStackParamList } from "../../App";
 import type { SearchResponse, Recommendation } from "../types/api";
+import type { RootStackParamList } from "../types/navigation";
 import { SearchTerm, ImageUrl } from "../types/common";
 import { supabase } from "../lib/supabase";
 
 const { width: screenWidth } = Dimensions.get("window");
 const WEBHOOK_URL =
-  "https://hook.us2.make.com/ogbhho3acyrvdcgsavgj4ejsmc2jxu6b";
+  "https://hook.us2.make.com/1er9s9t0anvvjn91slg3cbqocjpaciae";
 
-type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "SearchResult"
->;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type SearchResultRouteProp = RouteProp<RootStackParamList, "SearchResult">;
 
 interface APIResponse {
@@ -53,8 +50,7 @@ export const SearchResultPage: React.FC = () => {
   >({});
   const [bannerError, setBannerError] = useState(false);
 
-  const searchTerm = route.params.searchTerm as SearchTerm;
-  const searchResults: SearchResponse = route.params.searchResults;
+  const { searchTerm, searchResults } = route.params;
 
   const handleRecommendationClick = async (item: Recommendation) => {
     setIsLoading(true);
@@ -101,6 +97,7 @@ export const SearchResultPage: React.FC = () => {
 
       const text = await response.text();
       let apiResponse: APIResponse;
+      console.log("API Response:", text);
 
       try {
         const cleanText = text.trim();

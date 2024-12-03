@@ -54,8 +54,8 @@ export const ProfileScreen: React.FC = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-    } catch (error) {
-      Alert.alert("Error signing out", error.message);
+    } catch (error: any) {
+      Alert.alert("Error signing out", error?.message || "An error occurred");
     }
   };
 
