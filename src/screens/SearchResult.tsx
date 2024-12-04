@@ -92,22 +92,28 @@ export const SearchResultPage: React.FC = () => {
         }),
       });
 
+      console.log("API Request sent for title:", item.Title);
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const text = await response.text();
+      console.log("Raw API Response:", text);
       let apiResponse: APIResponse;
-      console.log("API Response:", text);
 
       try {
         const cleanText = text.trim();
+        console.log("Cleaned text:", cleanText);
         if (cleanText.startsWith("'") && cleanText.endsWith("'")) {
           const jsonText = cleanText.slice(1, -1).replace(/\\'/g, "'");
+          console.log("Processed JSON text:", jsonText);
           apiResponse = JSON.parse(jsonText);
         } else {
           apiResponse = JSON.parse(cleanText);
         }
+
+        console.log("Parsed API Response:", apiResponse);
 
         if (!apiResponse || typeof apiResponse !== "object") {
           throw new Error("Invalid API response format");
@@ -227,7 +233,7 @@ export const SearchResultPage: React.FC = () => {
           <Text style={styles.title}>Results for {searchTerm}</Text>
 
           <FilterTabs
-            tabs={["All", "Movies", "Series"]}
+            tabs={["All", "Movie", "Series"]}
             activeTab={activeTab}
             onTabPress={setActiveTab}
           />
@@ -256,8 +262,7 @@ export const SearchResultPage: React.FC = () => {
                 </View>
                 <View style={styles.ratingContainer}>
                   <Image source={logo} style={styles.ratingIcon} />
-                  <Text style={styles.ratingText}>90%</Text>
-                  {/* <Text style={styles.ratingText}>{item.Rating}%</Text> */}
+                  <Text style={styles.ratingText}>{item.rating}</Text>
                 </View>
               </TouchableOpacity>
             ))}
