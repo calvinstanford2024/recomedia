@@ -1,9 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, ScrollView, Alert } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Alert,
+  SafeAreaView,
+  Animated,
+  RefreshControl,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { ItineraryItem } from "../components/ItineraryItem";
 import * as Calendar from "expo-calendar";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { supabase } from "../lib/supabase";
+import type { SearchResponse } from "../types/api";
+
+type CalendarStackParamList = {
+  Calendar: undefined;
+  SearchResult: {
+    searchTerm: string;
+    searchResults: SearchResponse;
+  };
+};
+
+type NavigationProp = NativeStackNavigationProp<
+  CalendarStackParamList,
+  "Calendar"
+>;
 
 interface CalendarEvent {
   title: string;
@@ -11,51 +37,171 @@ interface CalendarEvent {
   icon?: keyof typeof Ionicons.glyphMap;
 }
 
+const loadingMessages = [
+  "Finding the perfect matches...",
+  "Analyzing your preferences...",
+  "Curating personalized recommendations...",
+  "Almost there...",
+];
+
 export const CalendarScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const spinValue = new Animated.Value(0);
+
+  const fetchCalendarEvents = async () => {
+    const { status } = await Calendar.requestCalendarPermissionsAsync();
+    if (status === "granted") {
+      const calendars = await Calendar.getCalendarsAsync(
+        Calendar.EntityTypes.EVENT
+      );
+      const defaultCalendars = calendars.filter(
+        (cal) => cal.allowsModifications
+      );
+
+      if (defaultCalendars.length > 0) {
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 7); // Get events for next 7 days
+
+        const eventsList = await Calendar.getEventsAsync(
+          defaultCalendars.map((cal) => cal.id),
+          startDate,
+          endDate
+        );
+
+        const formattedEvents = eventsList.map((event) => ({
+          title: event.title,
+          startDate: new Date(event.startDate),
+          icon: getIconForEvent(event.title),
+        }));
+
+        setEvents(formattedEvents);
+      }
+    } else {
+      Alert.alert(
+        "Permission Required",
+        "Please allow calendar access to view your events",
+        [{ text: "OK" }]
+      );
+    }
+  };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchCalendarEvents();
+    setRefreshing(false);
+  }, []);
+
+  const startSpinAnimation = useCallback(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(spinValue, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [spinValue]);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status === "granted") {
-        const calendars = await Calendar.getCalendarsAsync(
-          Calendar.EntityTypes.EVENT
+    if (isSearching) {
+      const messageInterval = setInterval(() => {
+        setLoadingMessageIndex((prev) =>
+          prev === loadingMessages.length - 1 ? 0 : prev + 1
         );
-        const defaultCalendars = calendars.filter(
-          (cal) => cal.allowsModifications
-        );
+      }, 3000);
 
-        if (defaultCalendars.length > 0) {
-          const startDate = new Date();
-          const endDate = new Date();
-          endDate.setDate(endDate.getDate() + 7); // Get events for next 7 days
+      startSpinAnimation();
 
-          const eventsList = await Calendar.getEventsAsync(
-            defaultCalendars.map((cal) => cal.id),
-            startDate,
-            endDate
-          );
+      return () => clearInterval(messageInterval);
+    }
+  }, [isSearching, startSpinAnimation]);
 
-          console.log("Fetched Calendar Events:", eventsList);
-
-          const formattedEvents = eventsList.map((event) => ({
-            title: event.title,
-            startDate: new Date(event.startDate),
-            icon: getIconForEvent(event.title),
-          }));
-
-          console.log("Formatted Events:", formattedEvents);
-          setEvents(formattedEvents);
-        }
-      } else {
-        Alert.alert(
-          "Permission Required",
-          "Please allow calendar access to view your events",
-          [{ text: "OK" }]
-        );
-      }
-    })();
+  useEffect(() => {
+    fetchCalendarEvents();
   }, []);
+
+  const handleEventPress = async (event: CalendarEvent) => {
+    if (isSearching) return;
+    setIsSearching(true);
+
+    const searchTerm = event.title;
+    setCurrentSearchTerm(searchTerm);
+
+    try {
+      const normalizedTerm = searchTerm.toLowerCase().trim();
+
+      // Check Supabase first
+      const { data: existingSearch, error } = await supabase
+        .from("searches")
+        .select("searchResult")
+        .eq("searchTerm", normalizedTerm)
+        .single();
+
+      if (!error && existingSearch) {
+        const result = JSON.parse(existingSearch.searchResult);
+        const parsedResult = {
+          ...result,
+          Recommendations: JSON.parse(result.Recommendations[0]),
+          AdditionalRecommendations: JSON.parse(
+            result.AdditionalRecommendations[0]
+          ),
+        };
+
+        navigation.navigate("SearchResult", {
+          searchTerm,
+          searchResults: parsedResult,
+        });
+        setIsSearching(false);
+        return;
+      }
+
+      // Make API call if not in DB
+      const response = await fetch(
+        "https://hook.us2.make.com/tskvqrcq0xldr2p2m9n72qattbvu8chg",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ term: searchTerm }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const rawData = await response.json();
+      const parsedData: SearchResponse = {
+        bannerUrl: rawData.bannerUrl,
+        Recommendations: Array.isArray(rawData.Recommendations)
+          ? JSON.parse(rawData.Recommendations[0])
+          : rawData.Recommendations,
+        AdditionalRecommendations: Array.isArray(
+          rawData.AdditionalRecommendations
+        )
+          ? JSON.parse(rawData.AdditionalRecommendations[0])
+          : rawData.AdditionalRecommendations,
+      };
+
+      navigation.navigate("SearchResult", {
+        searchTerm,
+        searchResults: parsedData,
+      });
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const getIconForEvent = (title: string): keyof typeof Ionicons.glyphMap => {
     const lowercaseTitle = title.toLowerCase();
@@ -66,7 +212,7 @@ export const CalendarScreen = () => {
     if (lowercaseTitle.includes("coffee")) return "cafe";
     if (lowercaseTitle.includes("gym") || lowercaseTitle.includes("workout"))
       return "fitness";
-    return "calendar"; // default icon
+    return "calendar";
   };
 
   const groupEventsByDay = (events: CalendarEvent[]) => {
@@ -93,16 +239,51 @@ export const CalendarScreen = () => {
       groups[dateKey].push(event);
     });
 
-    console.log("Grouped Events:", groups);
     return groups;
   };
 
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
   const groupedEvents = groupEventsByDay(events);
+
+  if (isSearching) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <StatusBar style="light" />
+        <View style={styles.loadingContent}>
+          <Animated.View
+            style={[styles.loadingIcon, { transform: [{ rotate: spin }] }]}
+          >
+            <Ionicons name="film-outline" size={50} color="#ffffff" />
+          </Animated.View>
+          <Text style={styles.loadingText}>
+            {loadingMessages[loadingMessageIndex]}
+          </Text>
+          <Text style={styles.loadingSubtext}>
+            Discovering content for "{currentSearchTerm}"
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ffffff"
+            titleColor="#ffffff"
+          />
+        }
+      >
         <Text style={styles.title}>Calendar</Text>
 
         {Object.entries(groupedEvents).map(([day, dayEvents]) => (
@@ -111,8 +292,9 @@ export const CalendarScreen = () => {
             {dayEvents.map((event, index) => (
               <ItineraryItem
                 key={index}
-                icon={event.icon}
+                icon={event.icon || "calendar"}
                 title={event.title}
+                onPress={() => handleEventPress(event)}
               />
             ))}
           </View>
@@ -155,5 +337,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     marginTop: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#1E1B2E",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingContent: {
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingIcon: {
+    marginBottom: 20,
+  },
+  loadingText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  loadingSubtext: {
+    color: "#ffffff80",
+    fontSize: 14,
+    textAlign: "center",
   },
 });

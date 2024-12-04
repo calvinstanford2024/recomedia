@@ -60,10 +60,29 @@ export type ExploreStackParamList = {
   };
 };
 
+export type CalendarStackParamList = {
+  Calendar: undefined;
+  SearchResult: {
+    searchTerm: string;
+    searchResults: SearchResponse;
+  };
+  RecommendationDetail: {
+    title: string;
+    year: string;
+    creator: string;
+    description: string;
+    reason: string;
+    places_featured: string[];
+    where_to_watch: string[];
+    imageUrl: string;
+    rating?: number;
+  };
+};
+
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const ExploreStack = createNativeStackNavigator<ExploreStackParamList>();
-const CalendarStack = createNativeStackNavigator();
+const CalendarStack = createNativeStackNavigator<CalendarStackParamList>();
 
 const HomeStackScreen = () => (
   <HomeStack.Navigator
@@ -106,6 +125,11 @@ const CalendarStackScreen = () => (
     }}
   >
     <CalendarStack.Screen name="Calendar" component={CalendarScreen} />
+    <CalendarStack.Screen name="SearchResult" component={SearchResultPage} />
+    <CalendarStack.Screen
+      name="RecommendationDetail"
+      component={RecommendationDetail}
+    />
   </CalendarStack.Navigator>
 );
 

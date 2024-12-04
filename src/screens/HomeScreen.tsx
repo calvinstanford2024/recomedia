@@ -90,7 +90,6 @@ export const HomeScreen: React.FC = () => {
       }
 
       if (existingSearch) {
-        console.log("Found existing search for:", normalizedTerm);
         const result = JSON.parse(existingSearch.searchResult);
         const parsedResult = {
           ...result,
@@ -108,7 +107,6 @@ export const HomeScreen: React.FC = () => {
         return;
       }
 
-      console.log("No existing search found for:", normalizedTerm);
       const response = await fetch(
         "https://hook.us2.make.com/tskvqrcq0xldr2p2m9n72qattbvu8chg",
         {

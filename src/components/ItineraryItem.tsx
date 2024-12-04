@@ -6,15 +6,17 @@ import { useNavigation } from "@react-navigation/native";
 interface ItineraryItemProps {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
+  onPress?: () => void;
 }
 
-export const ItineraryItem = ({ icon, title }: ItineraryItemProps) => {
+export const ItineraryItem = ({ icon, title, onPress }: ItineraryItemProps) => {
   const navigation = useNavigation<any>();
 
   const handlePress = () => {
-    if (title === "Flight to Los Angeles") {
+    if (onPress) {
+      onPress();
+    } else if (title === "Flight to Los Angeles") {
       navigation.navigate("FlightDetails");
-      //navigation.navigate("LocationScreen");
     }
   };
 
@@ -22,11 +24,7 @@ export const ItineraryItem = ({ icon, title }: ItineraryItemProps) => {
     <TouchableOpacity style={styles.container} onPress={handlePress}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Ionicons
-            name={icon as keyof typeof Ionicons.glyphMap}
-            size={24}
-            color="#fff"
-          />
+          <Ionicons name={icon} size={24} color="#fff" />
         </View>
         <Text style={styles.title}>{title}</Text>
       </View>
