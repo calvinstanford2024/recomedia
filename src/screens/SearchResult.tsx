@@ -284,15 +284,17 @@ export const SearchResultPage: React.FC = () => {
                     activeOpacity={0.7}
                     onPress={() => handleRecommendationClick(item)}
                   >
-                    {renderPosterImage(item.imageUrl)}
-                    <View style={styles.posterOverlay}>
-                      <Text style={styles.posterTitle} numberOfLines={2}>
-                        {item.Title}
-                      </Text>
-                      <View style={styles.typeContainer}>
-                        <Text style={styles.typeText}>{item.Type}</Text>
-                      </View>
+                    <View style={styles.imageWrapper}>
+                      {renderPosterImage(item.imageUrl)}
                     </View>
+                    {/* <View style={styles.posterOverlay}> */}
+                    <Text style={styles.posterTitle} numberOfLines={2}>
+                      {item.Title}
+                    </Text>
+                    {/* <View style={styles.typeContainer}>
+                        <Text style={styles.typeText}>{item.Type}</Text>
+                      </View> */}
+                    {/* </View> */}
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -412,11 +414,19 @@ const styles = StyleSheet.create({
   },
   posterContainer: {
     width: 140,
-    height: 210,
+    //height: 250,
     marginRight: 15,
     borderRadius: 12,
     overflow: "hidden",
-    backgroundColor: "#ffffff10",
+    //backgroundColor: "#ffffff10",
+    alignItems: "center",
+  },
+  imageWrapper: {
+    width: 140, // Match posterContainer width
+    height: 210, // Fixed height for the image
+    borderRadius: 12, // Optional: Rounded corners
+    overflow: "hidden", // Ensure the image fits within the container
+    backgroundColor: "#ffffff10", // Placeholder background
   },
   placeholderPoster: {
     width: "100%",
@@ -440,9 +450,10 @@ const styles = StyleSheet.create({
   },
   posterTitle: {
     color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 4,
+    fontSize: 12,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 8,
   },
   typeContainer: {
     backgroundColor: "#ffffff20",
