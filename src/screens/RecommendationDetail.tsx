@@ -111,6 +111,8 @@ export const RecommendationDetail: React.FC = () => {
     );
   };
 
+  console.log("places_featured:", places_featured);
+
   const parsedLocations = React.useMemo(() => {
     if (places_featured && places_featured[0]) {
       try {
@@ -189,7 +191,7 @@ export const RecommendationDetail: React.FC = () => {
 
           {Array.isArray(places_featured) && places_featured.length > 0 && (
             <>
-              <Text style={styles.sectionTitle}>Places featured:</Text>
+              <Text style={styles.sectionTitle}>Places featured</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -272,7 +274,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    //justifyContent: "space-between",
   },
   iconButton: {
     width: 40,
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 16,
@@ -357,11 +358,12 @@ const styles = StyleSheet.create({
     paddingRight: 24,
   },
   placeCard: {
-    width: 200,
+    width: 175,
     marginRight: 16,
     borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "#ffffff10",
+    alignItems: "center",
+    paddingBottom: 15,
   },
   placeImage: {
     width: "100%",
@@ -370,7 +372,7 @@ const styles = StyleSheet.create({
   },
   placeName: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "600",
     marginTop: 8,
     marginBottom: 8,
