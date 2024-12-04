@@ -1,25 +1,77 @@
 {
-  "expo": {
-    "name": "expo-app",
-    "slug": "expo-app",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+  "name": "recomedia",
+  "slug": "recomedia",
+  "owner": "calvinlaughlin",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "icon": "./assets/icon.png",
+  "userInterfaceStyle": "light",
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#1E1B2E"
+  },
+  "assetBundlePatterns": ["**/*"],
+  "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "com.recomedia.app",
+    "associatedDomains": ["applinks:wvqpksnbyjjwtexwmloc.supabase.co"],
+    "infoPlist": {
+      "NSLocationWhenInUseUsageDescription": "We need your location to show you nearby recommendations and content.",
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location to show you nearby recommendations and content.",
+      "NSLocationAlwaysUsageDescription": "We need your location to show you nearby recommendations and content."
     }
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/adaptive-icon.png",
+      "backgroundColor": "#1E1B2E"
+    },
+    "package": "com.recomedia.app",
+    "intentFilters": [
+      {
+        "action": "VIEW",
+        "data": [
+          {
+            "scheme": "recomedia",
+            "host": "wvqpksnbyjjwtexwmloc.supabase.co",
+            "pathPrefix": "/auth/v1/callback"
+          }
+        ],
+        "category": ["BROWSABLE", "DEFAULT"]
+      }
+    ]
+  },
+  "scheme": "recomedia",
+  "newArchEnabled": true,
+  "extra": {
+    "supabaseUrl": "https://wvqpksnbyjjwtexwmloc.supabase.co",
+    "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cXBrc25ieWpqd3RleHdtbG9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIwNzI2NDQsImV4cCI6MjA0NzY0ODY0NH0.TXkGgAUbXMm9otFVuiMRiwFuMQVkCgYH-s_CVMW5egQ",
+    "supabaseServiceKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cXBrc25ieWpqd3RleHdtbG9jIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMjA3MjY0NCwiZXhwIjoyMDQ3NjQ4NjQ0fQ.MEu7MNl-s9e2fpili2-fFFLAn5N5s3A9PnWgKwfE3RM",
+    "router": {
+      "origin": false
+    },
+    "eas": {
+      "projectId": "30cffc91-bf23-4d3f-98b6-c11a53a8d32c"
+    }
+  },
+  "plugins": [
+    "expo-router",
+    [
+      "expo-build-properties",
+      {
+        "ios": {
+          "deploymentTarget": "15.1"
+        }
+      }
+    ]
+  ],
+  "sdkVersion": "52.0.0",
+  "platforms": ["ios", "android", "web"],
+  "runtimeVersion": {
+    "policy": "appVersion"
+  },
+  "updates": {
+    "url": "https://u.expo.dev/30cffc91-bf23-4d3f-98b6-c11a53a8d32c"
   }
 }
