@@ -261,8 +261,13 @@ export const SearchResultPage: React.FC = () => {
                   </View>
                 </View>
                 <View style={styles.ratingContainer}>
-                  <Image source={logo} style={styles.ratingIcon} />
-                  <Text style={styles.ratingText}>{item.Rating}</Text>
+                  <Image
+                    source={logo}
+                    style={styles.ratingIcon}
+                    resizeMode="contain"
+                  />
+                  {/* <Text style={styles.ratingText}>{item.Rating}</Text> */}
+                  <Text style={styles.ratingText}>90%</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -485,16 +490,16 @@ const styles = StyleSheet.create({
     right: 10,
     flexDirection: "row",
     alignItems: "center",
+    padding: 5,
   },
   ratingIcon: {
-    width: 35,
-    height: 35,
-    marginRight: -4,
+    width: 25,
+    height: 25,
+    marginRight: 1,
   },
   ratingText: {
     color: "#D3B3FF",
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 5,
   },
 });
