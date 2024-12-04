@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   searchIcon: {
-    marginRight: 10,
+    marginRight: 5,
     paddingLeft: 15,
   },
   input: {
@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 12,
     height: "100%",
-    paddingLeft: 15,
   },
   clearButton: {
     marginLeft: 10,
+    marginRight: 10,
   },
   loadingIndicator: {
     marginLeft: 10,
