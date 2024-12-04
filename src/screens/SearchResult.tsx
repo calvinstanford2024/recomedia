@@ -22,6 +22,7 @@ import type { SearchResponse, Recommendation } from "../types/api";
 import type { RootStackParamList } from "../types/navigation";
 import { SearchTerm, ImageUrl } from "../types/common";
 import { supabase } from "../lib/supabase";
+import logo from "../../assets/logo-final.png";
 
 const { width: screenWidth } = Dimensions.get("window");
 const WEBHOOK_URL =
@@ -253,6 +254,11 @@ export const SearchResultPage: React.FC = () => {
                     <Text style={styles.typeText}>{item.Type}</Text>
                   </View>
                 </View>
+                <View style={styles.ratingContainer}>
+                  <Image source={logo} style={styles.ratingIcon} />
+                  <Text style={styles.ratingText}>90%</Text>
+                  {/* <Text style={styles.ratingText}>{item.Rating}%</Text> */}
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -458,5 +464,23 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 12,
     backgroundColor: "#1E1B2E",
+  },
+  ratingContainer: {
+    position: "absolute",
+    bottom: 5,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingIcon: {
+    width: 35,
+    height: 35,
+    marginRight: -4,
+  },
+  ratingText: {
+    color: "#D3B3FF",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
 });
