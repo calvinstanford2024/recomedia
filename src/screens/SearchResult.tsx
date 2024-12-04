@@ -221,7 +221,7 @@ export const SearchResultPage: React.FC = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
 
@@ -262,7 +262,7 @@ export const SearchResultPage: React.FC = () => {
                 </View>
                 <View style={styles.ratingContainer}>
                   <Image source={logo} style={styles.ratingIcon} />
-                  <Text style={styles.ratingText}>{item.rating}</Text>
+                  <Text style={styles.ratingText}>{item.Rating}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -311,7 +311,7 @@ export const SearchResultPage: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1E1B2E",
+    backgroundColor: "#2A2640",
   },
   safeArea: {
     flex: 1,
@@ -414,19 +414,17 @@ const styles = StyleSheet.create({
   },
   posterContainer: {
     width: 140,
-    //height: 250,
     marginRight: 15,
     borderRadius: 12,
     overflow: "hidden",
-    //backgroundColor: "#ffffff10",
     alignItems: "center",
   },
   imageWrapper: {
-    width: 140, // Match posterContainer width
-    height: 210, // Fixed height for the image
-    borderRadius: 12, // Optional: Rounded corners
-    overflow: "hidden", // Ensure the image fits within the container
-    backgroundColor: "#ffffff10", // Placeholder background
+    width: 140,
+    height: 210,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#ffffff10",
   },
   placeholderPoster: {
     width: "100%",
