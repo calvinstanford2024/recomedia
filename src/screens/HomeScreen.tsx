@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -8,12 +8,14 @@ import {
   Text,
   Animated,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { SearchBar } from "../components/SearchBar";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../App";
 import type { SearchResponse } from "../types/api";
@@ -29,12 +31,44 @@ const loadingMessages = [
   "Almost there...",
 ];
 
+interface UserData {
+  firstName: string;
+  lastName: string;
+}
+
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { user } = useAuth(); // Get user information from AuthContext
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const spinValue = new Animated.Value(0);
+
+  useEffect(() => {
+    // Fetch user data when component mounts
+    const fetchUserData = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("firstName, lastName")
+          .eq("id", user.id)
+          .single();
+
+        if (error) throw error;
+        setUserData(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   const startSpinAnimation = useCallback(() => {
     Animated.loop(
@@ -53,7 +87,7 @@ export const HomeScreen: React.FC = () => {
     ).start();
   }, [spinValue]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoading) {
       const messageInterval = setInterval(() => {
         setLoadingMessageIndex((prev) =>
@@ -147,23 +181,11 @@ export const HomeScreen: React.FC = () => {
     outputRange: ["0deg", "360deg"],
   });
 
-  if (isLoading) {
+  if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <StatusBar style="light" />
-        <View style={styles.loadingContent}>
-          <Animated.View
-            style={[styles.loadingIcon, { transform: [{ rotate: spin }] }]}
-          >
-            <Ionicons name="film-outline" size={50} color="#ffffff" />
-          </Animated.View>
-          <Text style={styles.loadingText}>
-            {loadingMessages[loadingMessageIndex]}
-          </Text>
-          <Text style={styles.loadingSubtext}>
-            Discovering content for "{currentSearchTerm}"
-          </Text>
-        </View>
+        <ActivityIndicator size="large" color="#ffffff" />
       </SafeAreaView>
     );
   }
@@ -181,10 +203,15 @@ export const HomeScreen: React.FC = () => {
       </View>
       <View style={styles.content}>
         <Image
-          source={require("../../assets/recomedia-slogan.png")}
+          source={require("../../assets/logo-final.png")}
           style={styles.icon}
         />
-        <SearchBar onSearch={handleSearch} />
+        {userData && (
+          <Text style={styles.greetingText}>Hello, {userData.firstName}!</Text>
+        )}
+        <View style={styles.searchBar}>
+          <SearchBar onSearch={handleSearch} />
+        </View>
       </View>
     </View>
   );
@@ -203,9 +230,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   icon: {
-    width: screenWidth * 0.95,
-    height: screenHeight * 0.5,
+    width: screenWidth * 0.35,
+    height: screenHeight * 0.35,
     resizeMode: "contain",
+  },
+  greetingText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginTop: -50,
+    marginBottom: 20,
+  },
+  textContainer: {
+    flex: 1,
+    alignItems: "flex-start",
   },
   loadingContainer: {
     flex: 1,
@@ -245,5 +283,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.1)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  searchBar: {
+    width: screenWidth * 0.95,
+    marginTop: -20,
   },
 });
