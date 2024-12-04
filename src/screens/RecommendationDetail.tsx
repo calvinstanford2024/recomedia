@@ -112,16 +112,16 @@ export const RecommendationDetail: React.FC = () => {
   };
 
   const parsedLocations = React.useMemo(() => {
-    if (where_to_watch && where_to_watch[0]) {
+    if (places_featured && places_featured[0]) {
       try {
-        return JSON.parse(where_to_watch[0]) as LocationInfo[];
+        return JSON.parse(places_featured[0]) as LocationInfo[];
       } catch (e) {
         console.error("Failed to parse locations:", e);
         return [];
       }
     }
     return [];
-  }, [where_to_watch]);
+  }, [places_featured]);
 
   return (
     <View style={styles.container}>
