@@ -143,13 +143,15 @@ export const CalendarScreen = () => {
       const normalizedTerm = searchTerm.toLowerCase().trim();
 
       // Check Supabase first
-      const { data: existingSearch, error } = await supabase
+      const { data: existingSearch, error: searchError } = await supabase
         .from("searches")
         .select("searchResult")
         .eq("searchTerm", normalizedTerm)
-        .single();
+        .order("createdAt", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (!error && existingSearch) {
+      if (!searchError && existingSearch) {
         const result = JSON.parse(existingSearch.searchResult);
         const parsedResult = {
           ...result,
