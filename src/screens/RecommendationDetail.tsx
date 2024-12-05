@@ -17,6 +17,8 @@ import type { RouteProp } from "@react-navigation/native";
 import type { RootStackParamList } from "../types/navigation";
 import { LinearGradient } from "expo-linear-gradient";
 
+import MAX_LOGO from "../../assets/max-logo.png";
+
 export interface Recommendation {
   title: string;
   year: string;
@@ -111,7 +113,8 @@ export const RecommendationDetail: React.FC = () => {
     );
   };
 
-  console.log("places_featured:", places_featured);
+  //console.log("places_featured:", places_featured);
+  console.log("where to watch:", where_to_watch);
 
   const parsedLocations = React.useMemo(() => {
     if (places_featured && places_featured[0]) {
@@ -219,11 +222,15 @@ export const RecommendationDetail: React.FC = () => {
                 {where_to_watch.map((platform, index) => (
                   <Image
                     key={index}
-                    source={{
-                      uri: `https://logo.clearbit.com/${platform
-                        .toLowerCase()
-                        .replace(/\s+/g, "")}.com`,
-                    }}
+                    source={
+                      platform.toLowerCase().includes("hbo max")
+                        ? MAX_LOGO
+                        : {
+                            uri: `https://logo.clearbit.com/${platform
+                              .toLowerCase()
+                              .replace(/\s+/g, "")}.com`,
+                          }
+                    }
                     style={styles.streamingLogo}
                   />
                 ))}
