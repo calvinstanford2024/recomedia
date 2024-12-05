@@ -258,16 +258,14 @@ export const ExploreScreen = () => {
         {seasonalEvents.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Seasonal Picks</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-            >
+            <View style={styles.seasonalContainer}>
               {seasonalEvents.map((event, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={styles.card}
+                  style={[
+                    styles.seasonalCard,
+                    index % 2 === 0 && styles.seasonalCardMarginRight,
+                  ]}
                   onPress={() => handleLocationPress(event)}
                 >
                   <Image
@@ -279,7 +277,7 @@ export const ExploreScreen = () => {
                   </View>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
           </>
         )}
       </ScrollView>
@@ -288,7 +286,8 @@ export const ExploreScreen = () => {
 };
 
 const { width } = Dimensions.get("window");
-const CARD_WIDTH = width * 0.7;
+const CARD_WIDTH = width * 0.65;
+const SEASONAL_CARD_WIDTH = (width - 55) / 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -322,7 +321,7 @@ const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     height: 200,
-    marginLeft: 20,
+    marginRight: 20,
     borderRadius: 15,
     overflow: "hidden",
     backgroundColor: "#2A2640",
@@ -346,12 +345,34 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "rgba(0,0,0,0.6)",
-    padding: 15,
+    padding: 7,
   },
   cardTitle: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
+  },
+  seasonalContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  seasonalCard: {
+    width: SEASONAL_CARD_WIDTH,
+    height: 120,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#2A2640",
+    marginBottom: 15,
+  },
+  seasonalCardMarginRight: {
+    marginRight: 10,
+  },
+  seasonalCardImage: {
+    width: "100%",
+    height: "70%",
+    resizeMode: "cover",
   },
   loadingContainer: {
     flex: 1,
