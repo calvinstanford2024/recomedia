@@ -489,14 +489,15 @@ const styles = StyleSheet.create({
   ratingIcon: {
     width: 25,
     height: 25,
+    resizeMode: "contain",
     marginRight: 0,
-    marginBottom: 2,
+    marginBottom: 5,
     marginTop: 2,
   },
   ratingText: {
     color: "#D3B3FF",
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 0,
   },
 });
