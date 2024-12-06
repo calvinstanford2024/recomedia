@@ -75,11 +75,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff15",
     borderRadius: 25,
-
     height: 50,
   },
   searchIcon: {
-    marginRight: 10,
+    marginRight: 5,
+    paddingLeft: 15,
   },
   input: {
     flex: 1,
@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 12,
     height: "100%",
-
   },
   clearButton: {
     marginLeft: 10,
+    marginRight: 10,
   },
   loadingIndicator: {
     marginLeft: 10,

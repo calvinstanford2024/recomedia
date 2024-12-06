@@ -4,36 +4,176 @@ import {
   View,
   Text,
   ScrollView,
-  Image,
   TouchableOpacity,
+  ActivityIndicator,
   Dimensions,
   SafeAreaView,
   Platform,
+  Modal,
+  Image,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { FilterTabs } from "../components/FilterTabs";
-import type { SearchResponse } from "../../types/api";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from "@react-navigation/native";
-import type { RootStackParamList } from "../../App";
+import type { SearchResponse, Recommendation } from "../types/api";
+import type { RootStackParamList } from "../types/navigation";
+import { SearchTerm, ImageUrl } from "../types/common";
+import { supabase } from "../lib/supabase";
+import logo from "../../assets/logo-final.png";
 
 const { width: screenWidth } = Dimensions.get("window");
+const WEBHOOK_URL =
+  "https://hook.us2.make.com/1er9s9t0anvvjn91slg3cbqocjpaciae";
 
-type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "SearchResult"
->;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type SearchResultRouteProp = RouteProp<RootStackParamList, "SearchResult">;
+
+interface APIResponse {
+  title: string;
+  year: string;
+  creator: string;
+  description: string;
+  reason: string;
+  places_featured: string[];
+  where_to_watch: string[];
+  rating: number;
+}
 
 export const SearchResultPage: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp<RootStackParamList, "SearchResult">>();
+  const route = useRoute<SearchResultRouteProp>();
   const [activeTab, setActiveTab] = useState<string>("All");
-  const results = route.params.searchResults;
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageLoadErrors, setImageLoadErrors] = useState<
+    Record<string, boolean>
+  >({});
+  const [bannerError, setBannerError] = useState(false);
+
+  const { searchTerm, searchResults } = route.params;
+
+  const handleRecommendationClick = async (item: Recommendation) => {
+    setIsLoading(true);
+    try {
+      // Check Supabase first for existing details
+      const { data: existingDetail, error: fetchError } = await supabase
+        .from("mediaDetail")
+        .select("*")
+        .eq("title", item.Title)
+        .single();
+
+      if (!fetchError && existingDetail) {
+        // If found in database, use cached data
+        const navigationParams = {
+          title: existingDetail.title,
+          year: existingDetail.year,
+          creator: existingDetail.creator,
+          description: existingDetail.description,
+          reason: existingDetail.reason,
+          places_featured: existingDetail.places_featured,
+          where_to_watch: existingDetail.where_to_watch,
+          imageUrl: item.imageUrl,
+          rating: item.rating,
+        };
+
+        navigation.navigate("RecommendationDetail", navigationParams);
+        return;
+      }
+
+      // If not found in database, make API call
+      const response = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: item.Title,
+          imageUrl: item.imageUrl,
+          searchTerm: searchTerm,
+        }),
+      });
+
+      console.log("API Request sent for title:", item.Title);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const text = await response.text();
+      console.log("Raw API Response:", text);
+      let apiResponse: APIResponse;
+
+      try {
+        const cleanText = text.trim();
+        console.log("Cleaned text:", cleanText);
+        if (cleanText.startsWith("'") && cleanText.endsWith("'")) {
+          const jsonText = cleanText.slice(1, -1).replace(/\\'/g, "'");
+          console.log("Processed JSON text:", jsonText);
+          apiResponse = JSON.parse(jsonText);
+        } else {
+          apiResponse = JSON.parse(cleanText);
+        }
+
+        console.log("Parsed API Response:", apiResponse);
+
+        if (!apiResponse || typeof apiResponse !== "object") {
+          throw new Error("Invalid API response format");
+        }
+
+        const navigationParams = {
+          title: apiResponse.title,
+          year: apiResponse.year,
+          creator: apiResponse.creator,
+          description: apiResponse.description,
+          reason: apiResponse.reason,
+          places_featured: apiResponse.places_featured,
+          where_to_watch: apiResponse.where_to_watch,
+          imageUrl: item.imageUrl,
+          rating: item.rating,
+        };
+
+        navigation.navigate("RecommendationDetail", navigationParams);
+      } catch (parseError) {
+        console.error("JSON Parse Error:", parseError);
+        throw new Error("Failed to parse API response");
+      }
+    } catch (error) {
+      console.error("Error in handleRecommendationClick:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageError = (imageUrl: string) => {
+    setImageLoadErrors((prev) => ({
+      ...prev,
+      [imageUrl]: true,
+    }));
+  };
+
+  const renderBanner = () => {
+    if (!searchResults.bannerUrl || bannerError) {
+      return <View style={styles.headerImage} />;
+    }
+
+    return (
+      <Image
+        source={{ uri: searchResults.bannerUrl }}
+        style={styles.headerImage}
+        onError={() => setBannerError(true)}
+      />
+    );
+  };
 
   const renderPosterImage = (imageUrl: string) => {
-    if (!imageUrl || imageUrl === "N/A") {
+    if (!imageUrl || imageLoadErrors[imageUrl]) {
       return (
         <View style={styles.placeholderPoster}>
           <Ionicons name="film-outline" size={40} color="#ffffff40" />
@@ -41,16 +181,23 @@ export const SearchResultPage: React.FC = () => {
         </View>
       );
     }
-    return <Image source={{ uri: imageUrl }} style={styles.posterImage} />;
+
+    return (
+      <Image
+        source={{ uri: imageUrl }}
+        style={styles.posterImage}
+        onError={() => handleImageError(imageUrl)}
+      />
+    );
   };
 
-  const filteredRecommendations = results?.Recommendations.filter(
+  const filteredRecommendations = searchResults.Recommendations.filter(
     (item) =>
       activeTab === "All" || item.Type.toLowerCase() === activeTab.toLowerCase()
   );
 
   const filteredAdditionalRecommendations =
-    results?.AdditionalRecommendations.filter(
+    searchResults.AdditionalRecommendations.filter(
       (item) =>
         activeTab === "All" ||
         item.Type.toLowerCase() === activeTab.toLowerCase()
@@ -59,12 +206,15 @@ export const SearchResultPage: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <Image
-        source={{ uri: results?.bannerUrl }}
-        style={styles.headerImage}
-        defaultSource={require("../../assets/magic-button.png")}
-        onError={() => console.log("Error loading banner image")}
-      />
+      {renderBanner()}
+
+      <Modal transparent visible={isLoading}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <ActivityIndicator size="large" color="#6C5DD3" />
+          </View>
+        </View>
+      </Modal>
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
@@ -72,7 +222,7 @@ export const SearchResultPage: React.FC = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
 
@@ -81,19 +231,21 @@ export const SearchResultPage: React.FC = () => {
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.title}>
-            Results for {route.params.searchTerm}
-          </Text>
+          <Text style={styles.title}>Results for {searchTerm}</Text>
 
           <FilterTabs
-            tabs={["All", "Movies", "Series"]}
+            tabs={["All", "Movie", "Series"]}
             activeTab={activeTab}
             onTabPress={setActiveTab}
           />
 
           <View style={styles.mainRecommendationsContainer}>
-            {filteredRecommendations?.map((item, index) => (
-              <View key={index} style={styles.mainCard}>
+            {filteredRecommendations.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.mainCard}
+                onPress={() => handleRecommendationClick(item)}
+              >
                 <View style={styles.mainPosterContainer}>
                   {renderPosterImage(item.imageUrl)}
                 </View>
@@ -102,44 +254,53 @@ export const SearchResultPage: React.FC = () => {
                   <Text style={styles.mainCardSubtitle}>
                     {item.Creator} • {item.Year}
                   </Text>
+                  <Text style={styles.mainCardDescription} numberOfLines={3}>
+                    {item.Reason}
+                  </Text>
                   <View style={styles.typeContainer}>
                     <Text style={styles.typeText}>{item.Type}</Text>
                   </View>
                 </View>
-              </View>
+                <View style={styles.ratingContainer}>
+                  <Image source={logo} style={styles.ratingIcon} />
+                  <Text style={styles.ratingText}>{item.rating}</Text>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
 
-          {filteredAdditionalRecommendations &&
-            filteredAdditionalRecommendations.length > 0 && (
-              <>
-                <Text style={styles.sectionTitle}>More to Explore</Text>
+          {filteredAdditionalRecommendations.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>More to Explore</Text>
 
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.moreToExploreContainer}
-                >
-                  {filteredAdditionalRecommendations.map((item, index) => (
-                    <TouchableOpacity
-                      key={`additional-${index}`}
-                      style={styles.posterContainer}
-                      activeOpacity={0.7}
-                    >
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.moreToExploreContainer}
+              >
+                {filteredAdditionalRecommendations.map((item, index) => (
+                  <TouchableOpacity
+                    key={`additional-${index}`}
+                    style={styles.posterContainer}
+                    activeOpacity={0.7}
+                    onPress={() => handleRecommendationClick(item)}
+                  >
+                    <View style={styles.imageWrapper}>
                       {renderPosterImage(item.imageUrl)}
-                      <View style={styles.posterOverlay}>
-                        <Text style={styles.posterTitle} numberOfLines={2}>
-                          {item.Title}
-                        </Text>
-                        <View style={styles.typeContainer}>
-                          <Text style={styles.typeText}>{item.Type}</Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            )}
+                    </View>
+                    {/* <View style={styles.posterOverlay}> */}
+                    <Text style={styles.posterTitle} numberOfLines={2}>
+                      {item.Title}
+                    </Text>
+                    {/* <View style={styles.typeContainer}>
+                       <Text style={styles.typeText}>{item.Type}</Text>
+                     </View> */}
+                    {/* </View> */}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          )}
 
           <View style={styles.bottomSpacer} />
         </ScrollView>
@@ -151,7 +312,7 @@ export const SearchResultPage: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1E1B2E",
+    backgroundColor: "#2A2640",
   },
   safeArea: {
     flex: 1,
@@ -170,6 +331,7 @@ const styles = StyleSheet.create({
     height: "35%",
     position: "absolute",
     backgroundColor: "#2A2640",
+    resizeMode: "cover",
   },
   backButton: {
     width: 40,
@@ -212,8 +374,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   mainPosterContainer: {
-    width: 100,
-    height: 150,
+    width: 115,
+    height: 185,
+  },
+  posterImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   mainCardContent: {
     flex: 1,
@@ -248,16 +415,17 @@ const styles = StyleSheet.create({
   },
   posterContainer: {
     width: 140,
-    height: 210,
     marginRight: 15,
     borderRadius: 12,
     overflow: "hidden",
-    backgroundColor: "#ffffff10",
+    alignItems: "center",
   },
-  posterImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+  imageWrapper: {
+    width: 140,
+    height: 210,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#ffffff10",
   },
   placeholderPoster: {
     width: "100%",
@@ -281,9 +449,10 @@ const styles = StyleSheet.create({
   },
   posterTitle: {
     color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 4,
+    fontSize: 12,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 8,
   },
   typeContainer: {
     backgroundColor: "#ffffff20",
@@ -299,5 +468,37 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    padding: 20,
+    borderRadius: 12,
+    backgroundColor: "#1E1B2E",
+  },
+  ratingContainer: {
+    position: "absolute",
+    bottom: 5,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingIcon: {
+    width: 25,
+    height: 25,
+    resizeMode: "contain",
+    marginRight: 0,
+    marginBottom: 5,
+    marginTop: 2,
+  },
+  ratingText: {
+    color: "#D3B3FF",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 0,
   },
 });
