@@ -181,11 +181,23 @@ export const HomeScreen: React.FC = () => {
     outputRange: ["0deg", "360deg"],
   });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <StatusBar style="light" />
-        <ActivityIndicator size="large" color="#ffffff" />
+        <View style={styles.loadingContent}>
+          <Animated.View
+            style={[styles.loadingIcon, { transform: [{ rotate: spin }] }]}
+          >
+            <Ionicons name="film-outline" size={50} color="#ffffff" />
+          </Animated.View>
+          <Text style={styles.loadingText}>
+            {loadingMessages[loadingMessageIndex]}
+          </Text>
+          <Text style={styles.loadingSubtext}>
+            Discovering content for "{currentSearchTerm}"
+          </Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -264,6 +276,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 10,
+    marginTop: 10,
   },
   loadingSubtext: {
     color: "#ffffff80",
