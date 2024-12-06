@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Animated,
   RefreshControl,
+  TouchableOpacity,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { ItineraryItem } from "../components/ItineraryItem";
@@ -267,6 +268,15 @@ export const CalendarScreen = () => {
           <Text style={styles.loadingSubtext}>
             Discovering content for "{currentSearchTerm}"
           </Text>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => {
+              setIsSearching(false);
+              navigation.navigate("Calendar");
+            }}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -364,5 +374,18 @@ const styles = StyleSheet.create({
     color: "#ffffff80",
     fontSize: 14,
     textAlign: "center",
+  },
+  cancelButton: {
+    marginTop: 40,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: "#6C5DD3",
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
