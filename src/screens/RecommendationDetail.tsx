@@ -16,7 +16,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from "@react-navigation/native";
 import type { RootStackParamList } from "../types/navigation";
 import { LinearGradient } from "expo-linear-gradient";
-
+import logo from "../../assets/logo-final.png";
 import MAX_LOGO from "../../assets/max-logo.png";
 
 export interface Recommendation {
@@ -54,7 +54,7 @@ export const RecommendationDetail: React.FC = () => {
     places_featured,
     where_to_watch,
     imageUrl,
-    rating = 90,
+    rating,
   } = route.params;
 
   const streamingColors: { [key: string]: string } = {
@@ -159,14 +159,10 @@ export const RecommendationDetail: React.FC = () => {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{title}</Text>
-            {rating && (
+            {rating !== undefined && rating !== null && (
               <View style={styles.ratingBadge}>
-                {/* <Image
-                  // source={require("../assets/rating-icon.png")}
-                  source={require("../assets/fruitvale.jpg")}
-                  style={styles.ratingIcon}
-                /> */}
-                <Text style={styles.ratingText}>{rating}%</Text>
+                <Image source={logo} style={styles.ratingIcon} />
+                <Text style={styles.ratingText}>{rating}</Text>
               </View>
             )}
           </View>
