@@ -74,7 +74,7 @@ export const SearchResultPage: React.FC = () => {
           places_featured: existingDetail.places_featured,
           where_to_watch: existingDetail.where_to_watch,
           imageUrl: item.imageUrl,
-          rating: item.Rating,
+          rating: existingDetail.rating,
         };
 
         navigation.navigate("RecommendationDetail", navigationParams);
@@ -128,7 +128,7 @@ export const SearchResultPage: React.FC = () => {
           places_featured: apiResponse.places_featured,
           where_to_watch: apiResponse.where_to_watch,
           imageUrl: item.imageUrl,
-          rating: item.Rating,
+          rating: apiResponse.rating,
         };
 
         navigation.navigate("RecommendationDetail", navigationParams);
@@ -261,13 +261,8 @@ export const SearchResultPage: React.FC = () => {
                   </View>
                 </View>
                 <View style={styles.ratingContainer}>
-                  <Image
-                    source={logo}
-                    style={styles.ratingIcon}
-                    resizeMode="contain"
-                  />
-                  {/* <Text style={styles.ratingText}>{item.Rating}</Text> */}
-                  <Text style={styles.ratingText}>90%</Text>
+                  <Image source={logo} style={styles.ratingIcon} />
+                  <Text style={styles.ratingText}>{item.rating}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -297,8 +292,8 @@ export const SearchResultPage: React.FC = () => {
                       {item.Title}
                     </Text>
                     {/* <View style={styles.typeContainer}>
-                        <Text style={styles.typeText}>{item.Type}</Text>
-                      </View> */}
+                       <Text style={styles.typeText}>{item.Type}</Text>
+                     </View> */}
                     {/* </View> */}
                   </TouchableOpacity>
                 ))}
@@ -490,16 +485,18 @@ const styles = StyleSheet.create({
     right: 10,
     flexDirection: "row",
     alignItems: "center",
-    padding: 5,
   },
   ratingIcon: {
     width: 25,
     height: 25,
-    marginRight: 1,
+    marginRight: 0,
+    marginBottom: 2,
+    marginTop: 2,
   },
   ratingText: {
     color: "#D3B3FF",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
+    marginBottom: 5,
   },
 });
