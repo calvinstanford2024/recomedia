@@ -1,16 +1,13 @@
-import { GOOGLE_API_KEY, PIXABAY_API_KEY } from "@env";
+import { GOOGLE_API_KEY } from "@env";
 
 interface GooglePlacesResponse {
   places: Array<{
     displayName: {
       text: string;
     };
-  }>;
-}
-
-interface PixabayResponse {
-  hits: Array<{
-    webformatURL: string;
+    photos: Array<{
+      name: string;
+    }>;
   }>;
 }
 
@@ -24,7 +21,6 @@ export async function getNearbyLocations(
   longitude: number
 ): Promise<NearbyLocation[]> {
   try {
-    // Step 1: Call Google Places API
     const googlePlacesUrl =
       "https://places.googleapis.com/v1/places:searchNearby";
     const googlePayload = {
@@ -52,7 +48,7 @@ export async function getNearbyLocations(
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": GOOGLE_API_KEY,
-        "X-Goog-FieldMask": "places.displayName",
+        "X-Goog-FieldMask": "places.displayName,places.photos",
       },
       body: JSON.stringify(googlePayload),
     });
@@ -64,35 +60,30 @@ export async function getNearbyLocations(
     const googleData: GooglePlacesResponse = await googleResponse.json();
     const places = googleData.places || [];
 
-    // Step 2: For each place, call Pixabay API
-    const nearbyPlaces: NearbyLocation[] = [];
+    // Process each place and get its photo
+    const nearbyPlaces: NearbyLocation[] = await Promise.all(
+      places.map(async (place) => {
+        const placeName = place.displayName?.text;
+        if (!placeName) {
+          return null;
+        }
 
-    for (const place of places) {
-      const placeName = place.displayName?.text;
-      if (!placeName) continue;
+        let imageUrl = "";
+        if (place.photos && place.photos.length > 0) {
+          const photoReference = place.photos[0].name;
+          imageUrl = `https://places.googleapis.com/v1/${photoReference}/media?key=${GOOGLE_API_KEY}&maxHeightPx=400&maxWidthPx=400`;
+        }
 
-      const pixabayUrl = new URL("https://pixabay.com/api/");
-      pixabayUrl.searchParams.append("key", PIXABAY_API_KEY);
-      pixabayUrl.searchParams.append("q", placeName);
-      pixabayUrl.searchParams.append("image_type", "photo");
-      pixabayUrl.searchParams.append("orientation", "horizontal");
-      pixabayUrl.searchParams.append("per_page", "3");
+        return {
+          locationName: placeName,
+          imageUrl,
+        };
+      })
+    );
 
-      const pixabayResponse = await fetch(pixabayUrl);
-      if (!pixabayResponse.ok) {
-        continue;
-      }
-
-      const pixabayData: PixabayResponse = await pixabayResponse.json();
-      const imageUrl = pixabayData.hits[0]?.webformatURL || "";
-
-      nearbyPlaces.push({
-        locationName: placeName,
-        imageUrl,
-      });
-    }
-
-    return nearbyPlaces;
+    return nearbyPlaces.filter(
+      (place): place is NearbyLocation => place !== null
+    );
   } catch (error) {
     console.error("Error fetching nearby locations:", error);
     throw error;
