@@ -39,6 +39,7 @@ interface APIResponse {
   reason: string;
   places_featured: string[];
   where_to_watch: string[];
+  rating: string;
 }
 
 export const SearchResultPage: React.FC = () => {
@@ -74,7 +75,7 @@ export const SearchResultPage: React.FC = () => {
           places_featured: existingDetail.places_featured,
           where_to_watch: existingDetail.where_to_watch,
           imageUrl: item.imageUrl,
-          rating: existingDetail.rating,
+          rating: parseFloat(existingDetail.rating) || undefined,
         };
 
         navigation.navigate("RecommendationDetail", navigationParams);
@@ -128,7 +129,7 @@ export const SearchResultPage: React.FC = () => {
           places_featured: apiResponse.places_featured,
           where_to_watch: apiResponse.where_to_watch,
           imageUrl: item.imageUrl,
-          rating: apiResponse.rating,
+          rating: parseFloat(apiResponse.rating) || undefined,
         };
 
         navigation.navigate("RecommendationDetail", navigationParams);
