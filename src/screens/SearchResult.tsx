@@ -263,7 +263,7 @@ export const SearchResultPage: React.FC = () => {
                 </View>
                 <View style={styles.ratingContainer}>
                   <Image source={logo} style={styles.ratingIcon} />
-                  <Text style={styles.ratingText}>{item.Rating}</Text>
+                  <Text style={styles.ratingText}>{item.rating}</Text>
                 </View>
               </TouchableOpacity>
             ))}
