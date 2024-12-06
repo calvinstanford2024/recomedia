@@ -319,6 +319,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     marginRight: 4,
+    resizeMode: "contain",
   },
   ratingText: {
     color: "#6C5DD3",
