@@ -197,6 +197,15 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.loadingSubtext}>
             Discovering content for "{currentSearchTerm}"
           </Text>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => {
+              setIsLoading(false); // Stop loading state
+              navigation.navigate("Home"); // Navigate back to Home
+            }}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -300,5 +309,18 @@ const styles = StyleSheet.create({
   searchBar: {
     width: screenWidth * 0.95,
     marginTop: -20,
+  },
+  cancelButton: {
+    marginTop: 40,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: "#6C5DD3",
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

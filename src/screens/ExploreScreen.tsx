@@ -211,6 +211,15 @@ export const ExploreScreen = () => {
           <Text style={styles.loadingSubtext}>
             Discovering content for "{currentSearchTerm}"
           </Text>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => {
+              setIsSearching(false); // Stop loading state
+              navigation.navigate("Explore"); // Navigate back to Home
+            }}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -398,5 +407,18 @@ const styles = StyleSheet.create({
     color: "#ffffff80",
     fontSize: 14,
     textAlign: "center",
+  },
+  cancelButton: {
+    marginTop: 40,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: "#6C5DD3",
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
