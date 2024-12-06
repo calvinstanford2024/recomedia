@@ -56,11 +56,13 @@ export const ExploreScreen = () => {
           toValue: 1,
           duration: 2000,
           useNativeDriver: true,
+          delay: 0,
         }),
         Animated.timing(spinValue, {
           toValue: 0,
           duration: 0,
           useNativeDriver: true,
+          delay: 0,
         }),
       ])
     ).start();
