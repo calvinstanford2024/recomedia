@@ -5,6 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -22,45 +24,48 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const handleSubmit = async () => {
     if (!searchTerm.trim()) return;
     await onSearch(searchTerm);
+    Keyboard.dismiss();
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <Ionicons
-          name="search-outline"
-          size={20}
-          color="#ffffff80"
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Search for a location or event"
-          placeholderTextColor="#ffffff80"
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-          onSubmitEditing={handleSubmit}
-          returnKeyType="search"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {searchTerm.length > 0 && (
-          <TouchableOpacity
-            onPress={() => setSearchTerm("")}
-            style={styles.clearButton}
-          >
-            <Ionicons name="close-circle" size={20} color="#ffffff80" />
-          </TouchableOpacity>
-        )}
-        {isLoading && (
-          <ActivityIndicator
-            style={styles.loadingIndicator}
-            color="#ffffff"
-            size="small"
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <View style={styles.searchContainer}>
+          <Ionicons
+            name="search-outline"
+            size={20}
+            color="#ffffff80"
+            style={styles.searchIcon}
           />
-        )}
+          <TextInput
+            style={styles.input}
+            placeholder="Search for a location or event"
+            placeholderTextColor="#ffffff80"
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            onSubmitEditing={handleSubmit}
+            returnKeyType="search"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {searchTerm.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearchTerm("")}
+              style={styles.clearButton}
+            >
+              <Ionicons name="close-circle" size={20} color="#ffffff80" />
+            </TouchableOpacity>
+          )}
+          {isLoading && (
+            <ActivityIndicator
+              style={styles.loadingIndicator}
+              color="#ffffff"
+              size="small"
+            />
+          )}
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 

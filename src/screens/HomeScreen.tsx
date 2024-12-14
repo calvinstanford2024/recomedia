@@ -9,6 +9,8 @@ import {
   Animated,
   TouchableOpacity,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
@@ -200,8 +202,8 @@ export const HomeScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => {
-              setIsLoading(false); // Stop loading state
-              navigation.navigate("Home"); // Navigate back to Home
+              setIsLoading(false);
+              navigation.navigate("Home");
             }}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -212,29 +214,33 @@ export const HomeScreen: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.profileButton}
-          onPress={() => navigation.navigate("ProfileScreen")}
-        >
-          <Ionicons name="person-circle-outline" size={30} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.content}>
-        <Image
-          source={require("../../assets/logo-final.png")}
-          style={styles.icon}
-        />
-        {userData && (
-          <Text style={styles.greetingText}>Hello, {userData.firstName}!</Text>
-        )}
-        <View style={styles.searchBar}>
-          <SearchBar onSearch={handleSearch} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation.navigate("ProfileScreen")}
+          >
+            <Ionicons name="person-circle-outline" size={30} color="#ffffff" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.content}>
+          <Image
+            source={require("../../assets/logo-final.png")}
+            style={styles.icon}
+          />
+          {userData && (
+            <Text style={styles.greetingText}>
+              Hello, {userData.firstName}!
+            </Text>
+          )}
+          <View style={styles.searchBar}>
+            <SearchBar onSearch={handleSearch} />
+          </View>
         </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
